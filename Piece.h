@@ -10,11 +10,18 @@
  *      Color of piece
  *      Name of piece
  *      Special class member to handle some special pieces properties
- *                  .       .       .
+ *      Contains enums and definitions related to a piece
  */
 
-enum   {WK = 1, WQ = 2, WB = 3, WKN = 4, WR = 5, WP = 6,
-        BK = -1, BQ = -2, BB = -3, BKN = -4, BR = -5, BP = -6, EMP = 0};
+enum   {WK = 0, WQ = 1, WB = 2, WKN = 3, WR = 4, WP = 5,
+        BK = 6, BQ = 7, BB = 8, BKN = 9, BR = 10, BP = 11, EMP = 12};
+#define ALPHAS "KQbnrpkqBNRP."
+
+
+
+#define BLACK 0
+#define WHITE 1
+
 
 class Piece {
 public:
@@ -32,7 +39,7 @@ private:
     int name;
     int position;
 
-    bool first_move; //used to handle king's
+    bool first_move; //used to handle king's pawns and rook's stuff
 
 };
 

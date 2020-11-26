@@ -8,3 +8,7 @@ Move::Move(int i, int j) : source(i), dest(j){
 
 
 }
+
+Move::Move() : source(-1), dest(-1){
+
+}
