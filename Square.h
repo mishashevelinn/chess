@@ -2,18 +2,22 @@
 // Created by misha on 24/11/2020.
 //
 
-#ifndef CHESS_ENTRY_H
-#define CHESS_ENTRY_H
+#ifndef CHESS_SQUARE_H
+#define CHESS_SQUARE_H
 #include "Piece.h"
+#include <string>
+using namespace std;
 
-class Entry {
+
+class Square {
 public:
-    Entry();
-    Entry(const Piece& owner, int id);
+    Square();
+    Square(const Piece& owner, int id);
     Piece const & getOwner() const;
-    bool setOwner(const Piece &owner);
+    void setOwner(Piece owner);
+    void get_info();
 
-    Entry(const Piece &owner, const bool Color, const int id);
+    Square(const Piece &owner, const bool Color, const int id);
 
     bool isOccupied() const; //check if the square is not empty for possible move
 
@@ -35,11 +39,12 @@ private:
     Piece owner;
     int id;
 
-                                    //
+
+    //
 
 
     void info();
 };
 
 
-#endif //CHESS_ENTRY_H
+#endif //CHESS_SQUARE_H

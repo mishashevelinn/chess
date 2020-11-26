@@ -6,45 +6,40 @@
 
 
 #include "Board.h"
-#include "Entry.h"
+#include "Square.h"
 #include <iostream>
 using namespace std;
 
 
-Board::Board() : moves(new Move[1024]), squares(new Entry[64]) {
-
-
-
-
-
-
+Board::Board() : moves(new Move[1024]), squares(new Square[64]) {
 
 }
-
+/*Initialize a board to its beginning state*/
 void Board::init() {
-    squares[E1] = Entry(Piece(WHITE, WK), E1);
-    squares[D1] = Entry(Piece(WHITE, WQ), D1);
-    squares[E8] = Entry(Piece(BLACK, BK), E8);
-    squares[D8] = Entry(Piece(BLACK, BQ), D8);
+    init_players();
+    squares[E1] = Square(Piece(WHITE, WK), E1); //place kings and queens
+    squares[D1] = Square(Piece(WHITE, WQ), D1);
+    squares[E8] = Square(Piece(BLACK, BK), E8);
+    squares[D8] = Square(Piece(BLACK, BQ), D8);
     for (int i = A8; i <= H1; i++) {
         if (i >= A7 && i <= H7 ) //place White pawns
-            squares[i] = Entry(Piece(BLACK, WP), i);
-        if(i == A8 || i == H8)//place white rooks
-            squares[i] = Entry(Piece(BLACK, WR), i);
-        if(i == B8 || i == G8) //place white knights
-            squares[i] = Entry(Piece(BLACK, WKN), i);
-        if(i == C8 || i == F8 ) //place white bishops
-            squares[i] = Entry(Piece(BLACK, WB) , i);
-        if(i >= A2 && i <= H2) //place black pawns
-            squares[i] = Entry(Piece(WHITE, BP), i);
-        if(i == A1 || i == H1)  //place black rooks
-            squares[i] = Entry(Piece(WHITE, BR), i);
-        if(i == B1 || i == G1)//place black knights
-            squares[i] = Entry(Piece(WHITE, BKN), i);
-        if(i == C1 || i == F1)//place black bishops
-            squares[i] = Entry(Piece(WHITE, BB), i);
-        //else
-
+            squares[i] = Square(Piece(BLACK, WP), i);
+        else if(i == A8 || i == H8)//place white rooks
+            squares[i] = Square(Piece(BLACK, WR), i);
+        else if(i == B8 || i == G8) //place white knights
+            squares[i] = Square(Piece(BLACK, WKN), i);
+        else if(i == C8 || i == F8 ) //place white bishops
+            squares[i] = Square(Piece(BLACK, WB) , i);
+        else if(i >= A2 && i <= H2) //place black pawns
+            squares[i] = Square(Piece(WHITE, BP), i);
+        else if(i == A1 || i == H1)  //place black rooks
+            squares[i] = Square(Piece(WHITE, BR), i);
+        else if(i == B1 || i == G1)//place black knights
+            squares[i] = Square(Piece(WHITE, BKN), i);
+        else if(i == C1 || i == F1)//place black bishops
+            squares[i] = Square(Piece(WHITE, BB), i);
+        else if(i != E1 && i != D1 && i != D8 && i != E8)
+            squares[i] = Square(Piece(-1, EMP), i );
     }
 
 }
@@ -64,8 +59,49 @@ void Board::printBoard() {
     cout << ALPHABETH << endl;
 }
 
+bool Board::make_move(Move m) {
+    Piece p1 = squares[m.getSource()].getOwner();
+    if(!isValidMove(m)) {
+        cout << "make_move got invalid move and returned false";
+        return false;
+    }
+    squares[m.getDest()].setOwner(Piece(p1.getColor(), p1.getName()));
+    squares[m.getSource()].setOwner( Piece()); //make source square empty
 
 
+    cout << "move of " << ALPHAS[squares[m.getDest()].getOwner().getName()] << " succeed" <<endl;
+    cout << "move info: " << key.substr(2*m.getSource() - 1, 2) << ", " << key.substr(2*m.getDest() - 1,2 ) << endl;
+
+    return true;
+
+
+}
+/*using array of counters to keep track of dead and alive pieces */
+void Board::init_players() {
+    whites[WK] = 1;
+    whites[WQ] = 1;
+    whites[WB] = 2;
+    whites[WKN] = 2;
+    whites[WR] = 2;
+    whites[WP] = 8;
+
+    blacks[BK - 6] = 1;
+    whites[BQ - 6] = 1;
+    whites[BB - 6] = 2;
+    whites[BKN - 6] = 2;
+    whites[BR - 6] = 2;
+    whites[BP - 6] = 8;
+    }
+
+bool Board::isValidMove(const Move &m) const {
+    return true;
+}
+
+
+//enum   {WK = 0, WQ = 1, WB = 2, WKN = 3, WR = 4, WP = 5,
+//    BK = 6, BQ = 7, BB = 8, BKN = 9, BR = 10, BP = 11, EMP = 12};
+//
+//
 
 
 //enum // Squares
@@ -79,4 +115,5 @@ void Board::printBoard() {
 //    A2 = 48, B2, C2, D2, E2, F2, G2, H2,
 //    A1 = 56, B1, C1, D1, E1, F1, G1, H1,
 //};
+
 

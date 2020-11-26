@@ -29,6 +29,7 @@ public:
     Piece(int color, int name);
     int getColor() const { return color;}
     int getName() const { return name;}
+    bool setPosition(const int& pos);
 
 
 
