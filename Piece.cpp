@@ -22,11 +22,11 @@ Piece::Piece() : color(2), name(EM), first_move(false) {
 }
 
 bool Piece::setPosition(const int &pos) {
-    if (pos % 10 == 0 || pos % 10 == 9 || pos < 21 || pos > 99 ) { //illegal spare columns and rows
-        cerr << "setPosition failed, probably while assigning it to owner by a square ";
-        cerr << "class: " << __FILE__ << "line: " << __LINE__ << endl;
-        return false;
-    }
+//    if (pos % 10 == 0 || pos % 10 == 9 || pos < 21 || pos > 99 ) { //illegal spare columns and rows //TODO Do I need this check?
+//        cerr << "setPosition failed, probably while assigning it to owner by a square ";
+//        cerr << "class: " << __FILE__ << "line: " << __LINE__ << endl;
+//        return false;
+//    }
     position = pos;
     return true;
 }

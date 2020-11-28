@@ -14,11 +14,11 @@
  */
 
 enum {
-    WK = 6, WQ = 5, WB = 3, WN = 2, WR = 4, WP = 1,
-    BK = -6, BQ = -5, BB = -3, BN = -2, BR = -4, BP = -1, EM = 0, IV = 99
+    WK = 6, WQ = 5, WR = 4, WB = 3, WN = 2, WP = 1,
+    BK = -6, BQ = -5, BR = -4, BB = -3, BN = -2,  BP = -1, EM = 0, IV = 7
 }pieces;
 
-static std::string names = "BKBQBRBBBNBPEMWPWRWNWBWQWK";
+static std::string names = "BKBQBRBBBNBPEMWPWNWBWRWQWKIV";
 
 using namespace std;
 #define ALPHAS "KQbnrpkqBNRP."
@@ -49,9 +49,54 @@ public:
 
     bool operator==(int) const;
 
+
     friend std::ostream &operator<<(std::ostream &os, Piece const &p) {
-        return os << names.substr(p.getName()+6, 2) << endl;
-    };
+        switch (p.getName()) {
+            case WP:
+                os << "WP";
+                break;
+            case WN:
+                os << "WN";
+                break;
+            case WB:
+                os << "WB";
+                break;
+            case WR:
+                os << "WR";
+                break;
+            case WQ:
+                os << "WQ";
+                break;
+            case WK:
+                os << "WK";
+                break;
+            case BK:
+                os << "BK";
+                break;
+            case BQ:
+                os << "BQ";
+                break;
+            case BR:
+                os << "BR";
+                break;
+            case BB:
+                os << "BB";
+                break;
+            case BN:
+                os << "BN";
+                break;
+            case BP:
+                os << "BP";
+                break;
+            case EM:
+                os << "EM";
+                break;
+            case IV:
+                os << "IV";
+                break;
+        }
+        return os;
+    }
 
     virtual ~Piece();
 

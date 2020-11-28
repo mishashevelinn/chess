@@ -20,19 +20,23 @@ enum // Squares
     A1 = 21, B1, C1, D1, E1, F1, G1, H1,
 }squares;
 
-#define ALPHABETH "A B C D E F G H"
+
+enum // Directions
+{
+    N = 10, S = -10, E = -1, W = 1,
+    NW = 11, SW = -9, NE = 9, SE = -11,
+    NNW = 21, NNE = 19, NWW = 12, NEE = 8,
+    SSW = -19, SSE = -21, SWW = -8, SEE = -12
+};
 
 class Board {
 public:
     Board();
 
-    void printBoard();
 
     void init();
 
     Square *board;
-    int whites[16];
-    int blacks[16];
     MoveList WhiteMoves;
     MoveList BlackMoves;
 
@@ -48,6 +52,8 @@ public:
 
     friend std::ostream& operator <<(std::ostream &os, const Board &rhs);
 
+    void set_square(int position, Piece &new_owner) const;
+
 
 
 private:
@@ -62,7 +68,6 @@ private:
 
     void init_players();
 
-    void set_square(int position, Piece &new_owner) const;
 
 
 };

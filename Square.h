@@ -70,6 +70,8 @@ public:
 
     bool operator==(const Square &rhs) const;
 
+    void operator=( Piece & p) { setOwner(p); }
+
 
 private:
     Piece owner;

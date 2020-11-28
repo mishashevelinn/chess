@@ -25,8 +25,8 @@ public:
     int getDest() const { return dest; }
 
     friend std::ostream &operator<<(std::ostream &os, Move const &m) {
-        return os << ALPHAS[m.piece.getName()] << ": " << dic.substr(2 * m.getSource() - 1, 2)
-                  << " --> " << dic.substr(2 * m.getDest() - 1, 2) << endl;
+        return os << m.piece << ": " << m.getSource()
+                  << " --> " << m.getDest();
     };
 
 private:
