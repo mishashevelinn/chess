@@ -17,16 +17,33 @@ Piece::~Piece() {
 
 }
 
-Piece::Piece() : color(2), name(EMP), first_move(false) {
+Piece::Piece() : color(2), name(EM), first_move(false) {
 
 }
 
 bool Piece::setPosition(const int &pos) {
-    if (pos <= A8 || pos >= H1) {
-        cerr << "Attempt to set illegal position for owner while setting owner of Square\n";
+    if (pos % 10 == 0 || pos % 10 == 9 || pos < 21 || pos > 99 ) { //illegal spare columns and rows
+        cerr << "setPosition failed, probably while assigning it to owner by a square ";
+        cerr << "class: " << __FILE__ << "line: " << __LINE__ << endl;
         return false;
     }
     position = pos;
     return true;
+}
+
+int Piece::getPosition() {
+    return position;
+}
+
+void Piece::setName(int new_name) {
+    this->name = new_name;
+}
+
+void Piece::setColor(int new_Color) {
+    this->color = new_Color;
+}
+
+bool Piece::operator==(int i) const {
+    return name == i;
 }
 

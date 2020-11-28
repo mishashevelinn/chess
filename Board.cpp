@@ -6,96 +6,149 @@
 
 
 #include "Board.h"
-#include "Square.h"
 #include <iostream>
+
 using namespace std;
 
+Piece empty = Piece(2, EM);
 
-Board::Board() : moves(new Move[1024]), squares(new Square[64]) {
+
+Board::Board() : board(new Square[120]), turn(WHITE) {
 
 }
+
+std::ostream &operator<<(std::ostream &os, const Board &rhs) {
+    static const char pieces[] = "kqrbnp.PNBRQK";
+
+    for (int row = 8; row >= 1; --row) {
+        os << row << " ";
+        for (int col = 1; col <= 8; ++col) {
+            int number = (row + 1) * 10 + col;
+            int piece = rhs.get_square(number).getOwner().getName();
+            if (piece != IV) {
+                os << pieces[piece + 6] << " ";
+            }
+        }
+        os << std::endl;
+    }
+    os << "  a b c d e f g h" << std::endl;
+
+
+    if (rhs.white_king_checked) {
+        os << "You are in check!" << std::endl;
+    }
+    //if black king checked
+    return os;
+}
+
+
 /*Initialize a board to its beginning state*/
 void Board::init() {
-    init_players();
-    squares[E1] = Square(Piece(WHITE, WK), E1); //place kings and queens
-    squares[D1] = Square(Piece(WHITE, WQ), D1);
-    squares[E8] = Square(Piece(BLACK, BK), E8);
-    squares[D8] = Square(Piece(BLACK, BQ), D8);
-    for (int i = A8; i <= H1; i++) {
-        if (i >= A7 && i <= H7 ) //place White pawns
-            squares[i] = Square(Piece(BLACK, WP), i);
-        else if(i == A8 || i == H8)//place white rooks
-            squares[i] = Square(Piece(BLACK, WR), i);
-        else if(i == B8 || i == G8) //place white knights
-            squares[i] = Square(Piece(BLACK, WKN), i);
-        else if(i == C8 || i == F8 ) //place white bishops
-            squares[i] = Square(Piece(BLACK, WB) , i);
-        else if(i >= A2 && i <= H2) //place black pawns
-            squares[i] = Square(Piece(WHITE, BP), i);
-        else if(i == A1 || i == H1)  //place black rooks
-            squares[i] = Square(Piece(WHITE, BR), i);
-        else if(i == B1 || i == G1)//place black knights
-            squares[i] = Square(Piece(WHITE, BKN), i);
-        else if(i == C1 || i == F1)//place black bishops
-            squares[i] = Square(Piece(WHITE, BB), i);
-        else if(i != E1 && i != D1 && i != D8 && i != E8)
-            squares[i] = Square(Piece(-1, EMP), i );
-    }
+    int initial[120] = {
+            IV, IV, IV, IV, IV, IV, IV, IV, IV, IV,
+            IV, IV, IV, IV, IV, IV, IV, IV, IV, IV,
+            IV, WR, WN, WB, WQ, WK, WB, WN, WR, IV,
+            IV, WP, WP, WP, WP, WP, WP, WP, WP, IV,
+            IV, EM, EM, EM, EM, EM, EM, EM, EM, IV,
+            IV, EM, EM, EM, EM, EM, EM, EM, EM, IV,
+            IV, EM, EM, EM, EM, EM, EM, EM, EM, IV,
+            IV, EM, EM, EM, EM, EM, EM, EM, EM, IV,
+            IV, BP, BP, BP, BP, BP, BP, BP, BP, IV,
+            IV, BR, BN, BB, BQ, BK, BB, BN, BR, IV,
+            IV, IV, IV, IV, IV, IV, IV, IV, IV, IV,
+            IV, IV, IV, IV, IV, IV, IV, IV, IV, IV};
 
+    Square board[120];
+    for (int i = 21; i < 120; ++i) {
+        if (initial[i] != IV) {
+            Piece piece(BLACK, initial[i]);
+            set_square(i, piece);
+        }
+    }
 }
 
-void Board::printBoard() {
-    for (int i = A8; i <= H1; i++) {
-        if(i == A1 || i == A2)
-            cout << 9 - (i % 7 +7) << ' ';
-        else if (i%8 == 1)
-            cout << 9 - i % 7<< ' ';
 
-        cout << ALPHAS[squares[i].getOwner().getName()] << " ";
-        if (i !=0  && i % 8 == 0)
-            cout <<  endl;
-    }
-    cout << "  ";
-    cout << ALPHABETH << endl;
-}
-
-bool Board::make_move(Move m) {
-    Piece p1 = squares[m.getSource()].getOwner();
-    if(!isValidMove(m)) {
-        cout << "make_move got invalid move and returned false";
+bool Board::make_move(Move const &m) {
+    Piece moved_piece = board[m.getSource()].getOwner();
+    if (!isValidMove(m)) {
+        cerr << "passing invalid move to make_move(Move m)\n " << __FILE__ << " LINE: " << __LINE__ << endl;
         return false;
     }
-    squares[m.getDest()].setOwner(Piece(p1.getColor(), p1.getName()));
-    squares[m.getSource()].setOwner( Piece()); //make source square empty
+
+    set_square(m.getDest(), moved_piece);
+    set_square(m.getSource(), empty);
 
 
-    cout << "move of " << ALPHAS[squares[m.getDest()].getOwner().getName()] << " succeed" <<endl;
-    cout << "move info: " << key.substr(2*m.getSource() - 1, 2) << ", " << key.substr(2*m.getDest() - 1,2 ) << endl;
+    cout << "move of " << ALPHAS[board[m.getDest()].getOwner().getName()] << " succeed" << endl;
+    cout << "move info: " << key.substr(2 * m.getSource() - 1, 2) << ", " << key.substr(2 * m.getDest() - 1, 2) << endl;
 
     return true;
 
 
 }
-/*using array of counters to keep track of dead and alive pieces */
-void Board::init_players() {
-    whites[WK] = 1;
-    whites[WQ] = 1;
-    whites[WB] = 2;
-    whites[WKN] = 2;
-    whites[WR] = 2;
-    whites[WP] = 8;
 
-    blacks[BK - 6] = 1;
-    whites[BQ - 6] = 1;
-    whites[BB - 6] = 2;
-    whites[BKN - 6] = 2;
-    whites[BR - 6] = 2;
-    whites[BP - 6] = 8;
-    }
+/*using array of counters to keep track of dead and alive pieces */
+
 
 bool Board::isValidMove(const Move &m) const {
+    if (this[0][m.getSource()].getOwner() == EM) return false; //piece == int overload
+
+
     return true;
 }
+
+void Board::set_square(int position, Piece &new_owner) const {
+    board[position].setOwner(new_owner);
+    new_owner.setPosition(position);
+    board[position].setID(position);  //TODO adding set id to square
+}
+
+Square const &Board::get_square(int position) const {
+    return board[position];
+}
+
+void Board::find_legal_moves() {
+    for (int i = A8; i < H1; i++) {
+        if (get_square(i).isOccupied()) {
+            Piece piece = get_square(i).getOwner();
+            int j;
+
+            switch (piece.getName()) {
+                case WP :  //white pawn
+                    j = i - 8;   //one square forward
+                    if (!get_square(i).isOccupied()) {
+                        if (i < 17) //check for promotion
+                        {
+                            {
+                                Move move(i, j, piece); //move object aware of a piece which has done the move
+                                WhiteMoves.add(move);   //this can be used to indicate promotion input conditions
+                            }
+                            {
+
+                            }
+                        } else    //regular pawn move
+                        {
+                            Move move(i, j, piece);
+                            WhiteMoves.add(move);
+                        }
+
+                        j = i - 16; //two board forward from second rank
+                        if (!get_square(j).isOccupied() && i >= A2) {
+                            Move move(i, j, piece);
+                            WhiteMoves.add(move);
+                        }
+                    }
+            }
+
+        }
+
+
+    }
+
+}
+
+
+
 
 
 //enum   {WK = 0, WQ = 1, WB = 2, WKN = 3, WR = 4, WP = 5,
