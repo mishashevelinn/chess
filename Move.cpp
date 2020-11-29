@@ -12,3 +12,13 @@ Move::Move(int i, int j, const Piece &p) : source(i), dest(j), piece(p) {
 Move::Move() : source(-1), dest(-1), piece(2, EM) {
 
 }
+
+bool Move::operator==(const Move &rhs) const {
+    return source == rhs.source &&
+           dest == rhs.dest;
+           //piece == rhs.piece;
+}
+
+bool Move::operator!=(const Move &rhs) const {
+    return !(rhs == *this);
+}

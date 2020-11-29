@@ -3,7 +3,7 @@
 //
 
 #include "Move.h"
-
+#include <iostream>
 #ifndef CHESS_MOVELIST_H
 #define CHESS_MOVELIST_H
 
@@ -18,10 +18,26 @@ public:
 
     int get_size() const { return size; }
 
-    const Move &operator[](unsigned int index) const { return moves[index]; }
+    bool in(const Move & move) const;
+
+    const Move &operator[](unsigned int index) const
+    {
+        if(index > size + 1)
+        {
+            cout << "RANGE ERROR";
+            throw exception();
+        }
+
+        return moves[index];
+    }
 
     Move *moves;
     int size;
+
+
+
+
+
 
 private:
 

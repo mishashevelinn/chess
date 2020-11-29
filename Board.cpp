@@ -13,7 +13,7 @@ using namespace std;
 Piece empty = Piece(2, EM);
 
 
-Board::Board() : board(new Square[120]), turn(WHITE) {
+Board::Board() : board(new Square[120]), white_turn(false) {
 
 }
 
@@ -34,8 +34,8 @@ std::ostream &operator<<(std::ostream &os, const Board &rhs) {
     os << "  a b c d e f g h" << std::endl;
 
 
-    if (rhs.white_king_checked) {
-        os << "You are in check!" << std::endl;
+    if (rhs.white_king_checked && rhs.white_turn) {
+        os << "White king checked" << std::endl;
     }
     //if black king checked
     return os;
@@ -74,7 +74,7 @@ void Board::init() {
 bool Board::make_move(Move const &m) {
     Piece moved_piece = board[m.getSource()].getOwner();
     if (!isValidMove(m)) {
-        cerr << "passing invalid move to make_move(Move m)\n " << __FILE__ << " LINE: " << __LINE__ << endl;
+        cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
         return false;
     }
 
@@ -83,8 +83,8 @@ bool Board::make_move(Move const &m) {
 
 
     cout << "move of " << ALPHAS[board[m.getDest()].getOwner().getName()] << " succeed" << endl;
-    cout << "move info: " << key.substr(2 * m.getSource() - 1, 2) << ", " << key.substr(2 * m.getDest() - 1, 2) << endl;
 
+    white_turn  = !white_turn;
     return true;
 
 
@@ -94,14 +94,16 @@ bool Board::make_move(Move const &m) {
 
 
 bool Board::isValidMove(const Move &m) const {
-    if (this[0][m.getSource()].getOwner() == EM) return false; //piece == int overload
-
-
-    return true;
+    if (get_square(m.getSource()) == EM) return false; //piece == int overload
+    if (get_square(m.getSource()).getOwner().getName() < 0 && white_turn) return false;
+    if (get_square(m.getSource()).getOwner().getName() > 0 && !white_turn) return false;
+    if(white_turn && WhiteMoves.in(m)) return true;
+    if(!white_turn && BlackMoves.in(m)) return true;
+    return false;
 }
 
 void Board::set_square(int position, Piece &new_owner) const {
-    board[position].setOwner(new_owner);
+    board[position] = new_owner;
     new_owner.setPosition(position);
     board[position].setID(position);
 }
@@ -111,178 +113,350 @@ Square const &Board::get_square(int position) const {
 }
 
 void Board::find_legal_moves() {
-    for (int i = A1; i <= H8; i++) {
-        if (get_square(i).isOccupied() && get_square(i).getOwner().getName() != IV) {
-            Piece piece = get_square(i).getOwner();
-            int j;
+    WhiteMoves.clear(); //clear all moves lists each time before starting counting
+    BlackMoves.clear();
 
-            switch (piece.getName()) {
-                case WP : //white pawn
-                    j = i + 10;
-                    if (!get_square(j).isOccupied()) { //one square forward
-                        if (i > 80) //check for promotion
-                        {
+    if (white_turn) {
+        for (int i = A1; i <= H8; i++) {
+            if (get_square(i).isOccupied() && get_square(i).getOwner().getName() != IV) {
+                Piece piece = get_square(i).getOwner();
+                int j;
+
+                switch (piece.getName()) {
+                    case WP : //white pawn
+                        j = i + 10;
+                        if (!get_square(j).isOccupied()) { //one square forward
+                            if (i > 80) //check for promotion
                             {
-                                Move move(i, j, piece); //move object aware of a piece which has done the move
-                                WhiteMoves.add(move);   //TODO this can be used to indicate promotion input conditions
+                                {
+                                    Move move(i, j, piece); //move object aware of a piece which has done the move
+                                    WhiteMoves.add(
+                                            move);   //TODO this can be used to indicate promotion input conditions
+                                }
+
+                            } else    //regular pawn move
+                            {
+                                Move move(i, j, piece);
+                                WhiteMoves.add(move);
                             }
 
-                        } else    //regular pawn move
+                            j = i + 20; //two squares forward from second rank
+                            if (!get_square(j).isOccupied() && i <= H2) {
+                                Move move(i, j, piece);
+                                WhiteMoves.add(move);
+                            }
+
+                        }//done with one square forward options
+                        j = i + 9; //Diagonal capture
+                        if (!get_square(j).isOccupied() &&
+                            get_square(j).getOwner().getName() < 0) //TODO overload < for pieces
                         {
-                            Move move(i, j, piece);
-                            WhiteMoves.add(move);
+                            if (i > 80) { //check for promotion
+                                Move move(i, j, piece);
+                                WhiteMoves.add(move);               //TODO put a flag 'if promoted'
+                            } else {
+                                Move move(i, j, piece);
+                                WhiteMoves.add(move);
+                            }
+                        }
+                        j = i + 11; //other side diagonal captue
+                        if (!get_square(j).isOccupied() && get_square(j).getOwner().getName() < 0) {
+                            if (i > 80) //Check for promotion
+                            {
+                                Move move(i, j, piece);
+                                WhiteMoves.add(move); //TODO inform about promotion
+                            } else {
+                                Move move(i, j, piece);
+                                WhiteMoves.add(move);
+                            }
                         }
 
-                        j = i + 20; //two squares forward from second rank
-                        if (!get_square(j).isOccupied() && i <= H2) {
-                            Move move(i, j, piece);
-                            WhiteMoves.add(move);
-                        }
+                        break; //done with white pawn
 
-                    }//done with one square forward options
-                    j = i + 9; //Diagonal capture
-                    if (!get_square(j).isOccupied() &&
-                        get_square(j).getOwner().getName() < 0) //TODO overload < for pieces
+                    case WN : //white knight
                     {
-                        if (i > 80) { //check for promotion
-                            Move move(i, j, piece);
-                            WhiteMoves.add(move); //TODO put a flag 'if promoted'
-                        } else {
-                            Move move(i, j, piece);
-                            WhiteMoves.add(move);
+                        int dirs[8] = {NNW, NNE, NWW, NEE, SSW, SSE, SWW, SEE};
+                        for (int k = 0; k < 8; ++k) {
+                            int dir = dirs[k];
+
+                            j = i + dir;
+                            if (get_square(j).getOwner().getName() != IV)
+                                if (get_square(j).getOwner().getName() <= 0) {
+                                    Move move(i, j, piece);
+                                    WhiteMoves.add(move);
+                                }
                         }
                     }
-                    j = i + 11; //other side diagonal captue
-                    if (!get_square(j).isOccupied() && get_square(j).getOwner().getName() < 0) {
-                        if (i > 80) //Check for promotion
-                        {
-                            Move move(i, j, piece);
-                            WhiteMoves.add(move); //TODO inform about promotion
-                        } else {
-                            Move move(i, j, piece);
-                            WhiteMoves.add(move);
-                        }
-                    }
+                        break;
+                    case WB: //White bishop
+                    {
+                        int dirs[4] = {NE, NW, SE, SW};
 
-                    break; //done with white pawn
-
-                case WN : //white knight
-                {
-                    int dirs[8] = {NNW, NNE, NWW, NEE, SSW, SSE, SWW, SEE};
-                    for (int k = 0; k < 8; ++k) {
-                        int dir = dirs[k];
-
-                        j = i + dir;
-                        if (get_square(j).getOwner().getName() != IV)
-                            if (get_square(j).getOwner().getName() <= 0) {
-                                Move move(i, j, piece);
-                                WhiteMoves.add(move);
-                            }
-                    }
-                }
-                    break;
-                case WB: //White bishop
-                {
-                    int dirs[4] = {NE, NW, SE, SW};
-
-                    for (int k = 0; k < 4; ++k) {
-                        int dir = dirs[k];
-                        j = i;
-                        while (true) {
-                            j += dir;
-                            if (get_square(j) == IV) break;
-                            if (get_square(j).getOwner().getName() <= 0) {
-                                Move move(i, j, piece);
-                                WhiteMoves.add(move);
-                                if (get_square(j).getOwner().getName() < 0)
+                        for (int k = 0; k < 4; ++k) {
+                            int dir = dirs[k];
+                            j = i;
+                            while (true) {
+                                j += dir;
+                                if (get_square(j) == IV) break;
+                                if (get_square(j).getOwner().getName() <= 0) {
+                                    Move move(i, j, piece);
+                                    WhiteMoves.add(move);
+                                    if (get_square(j).getOwner().getName() < 0)
+                                        break;
+                                } else
                                     break;
-                            } else
-                                break;
+                            }
                         }
                     }
-                }
-                    break;
-                case WR :   // White rook
-                {
-                    int dirs[4] = {N, E, S, W};
+                        break;
+                    case WR :   // White rook
+                    {
+                        int dirs[4] = {N, E, S, W};
 
-                    for (int k = 0; k < 4; ++k) {
-                        int dir = dirs[k];
-                        j = i;
-                        while (true) {
-                            j += dir;
-                            if (get_square(i) == IV)
-                                break;             //edge of the board reached = > all moves in current direction are checked
-                            if (get_square(j).getOwner().getName() <= 0)
-                                 //move counts if next square in current direction is empty or occupied by a black piece
-                            {
-                                Move move(i, j, piece);
-                                WhiteMoves.add(move);
-                                if (get_square(j).getOwner().getName() < 0) //disability to jump over black pieces
+                        for (int k = 0; k < 4; ++k) {
+                            int dir = dirs[k];
+                            j = i;
+                            while (true) {
+                                j += dir;
+                                if (get_square(i) == IV)
+                                    break;             //edge of the board reached = > all moves in current direction are checked
+                                if (get_square(j).getOwner().getName() <= 0)
+                                    //move counts if next square in current direction is empty or occupied by a black piece
+                                {
+                                    Move move(i, j, piece);
+                                    WhiteMoves.add(move);
+                                    if (get_square(j).getOwner().getName() < 0) //disability to jump over black pieces
+                                        break;
+                                } else        //white piece is on next square in current direction
                                     break;
-                            } else        //white piece is on next square in current direction
-                                break;
-                        }
-
-
-                    }
-                }
-                    break; //white rook done
-                case WQ : //White queen
-                {
-                    int dirs[8] = {NE, NW, SE, SW, N, E, S, W};
-
-                    for (int k = 0; k < 8; k++)
-                    {
-                        int dir = dirs[k];
-                        j=i;
-                        while(true)
-                        {
-                            j+=dir;
-                            if (get_square(j).getOwner().getName() == IV)
-                                break;  //stop condition - edge of the board is reached
-                            if (get_square(j).getOwner().getName() <= 0 ) //next square in current direction is occupied by black piece or empty
-                            {
-                                Move move(i, j, piece);
-                                WhiteMoves.add(move);
-                                if( get_square(j).getOwner().getName() < 0)
-                                    break; //next square in current direction is occupied by black piece, can't jump over, done with current direction
                             }
-                            else
-                                break; //next square in current direction is occupied by white piece, done with current direction
                         }
                     }
-                }
-                    break;
-                case WK : // White king
-                {
-                    int dirs[8] = {NE, NW, SE, SW, N, E, S, W};
-
-                    for (int k=0; k<8; ++k)
+                        break; //white rook done
+                    case WQ : //White queen
                     {
-                        int dir = dirs[k];
+                        int dirs[8] = {NE, NW, SE, SW, N, E, S, W};
 
-                        j = i+dir;
-                        if (get_square(j).getOwner().getName() != IV)
-                            if (get_square(j).getOwner().getName() <= 0)
-                            {
-                                Move move(i, j, piece);
-                                WhiteMoves.add(move);
+                        for (int k = 0; k < 8; k++) {
+                            int dir = dirs[k];
+                            j = i;
+                            while (true) {
+                                j += dir;
+                                if (get_square(j).getOwner().getName() == IV)
+                                    break;  //stop condition - edge of the board is reached
+                                if (get_square(j).getOwner().getName() <=0) //next square in current direction is occupied by black piece or empty
+                                {
+                                    Move move(i, j, piece);
+                                    WhiteMoves.add(move);
+                                    if (get_square(j).getOwner().getName() < 0)
+                                        break; //next square in current direction is occupied by black piece, can't jump over, done with current direction
+                                } else
+                                    break; //next square in current direction is occupied by white piece, done with current direction
                             }
+                        }
                     }
+                        break;
+
+                    case WK : // White king
+                    {
+                        int dirs[8] = {NE, NW, SE, SW, N, E, S, W};
+
+                        for (int k = 0; k < 8; ++k) {
+                            int dir = dirs[k];
+
+                            j = i + dir;
+                            if (get_square(j).getOwner().getName() != IV)
+                                if (get_square(j).getOwner().getName() <= 0) {
+                                    Move move(i, j, piece);
+                                    WhiteMoves.add(move);
+                                }
+                        }
+                    }
+                        break;
+
+                    default : // Invalid, wrong color, or empty
+                        continue;
                 }
-                    break;
-
-                default : // Invalid, wrong color, or empty
-                    continue;
-
-
             }
-
-
         }
 
-    }
+    } else
+        for (int i = A1; i <= H8; ++i) {
+            if (get_square(i).isOccupied() && get_square(i).getOwner().getName() != IV) {
+                Piece piece = get_square(i).getOwner();
+                int j;
+
+                switch (piece.getName()) {
+                    case BP : // Black pawn
+                        j = i - 10; // One square forward
+                        if (!get_square(j).isOccupied()) {
+                            if (i < 40) // Check for promotion
+                            {
+                                {
+                                    Move move(i, j, piece);
+                                    BlackMoves.add(move);
+                                }
+
+                            } else // Regular pawn move
+                            {
+                                Move move(i, j, piece);
+                                BlackMoves.add(move);
+                            }
+
+                            j = i - 20; // Two squares forward
+                            if (!get_square(j).isOccupied()) {
+                                if (i > 80) // Only from seventh rank
+                                {
+                                    Move move(i, j, piece);
+                                    BlackMoves.add(move);
+                                }
+                            }
+                        }
+
+                        j = i - 9; // Diagonal capture
+                        if ((get_square(j).getOwner().getName() != IV && get_square(j).getOwner().getName() > 0)) {
+                            if (i < 40) // Check for promotion
+                            {
+                                {
+                                    Move move(i, j, piece); //TODO inform about promo
+                                    BlackMoves.add(move);
+                                }
+
+
+                            } else {
+                                Move move(i, j, piece);
+                                BlackMoves.add(move);
+                            }
+                        }
+
+                        j = i - 11; // Diagonal capture
+                        if ((get_square(j).getOwner().getName() != IV && get_square(j).getOwner().getName() > 0)) {
+                            if (i < 40) // Check for promotion
+                            {
+                                {
+                                    Move move(i, j, piece);
+                                    BlackMoves.add(move);
+                                }
+
+                            } else {
+                                Move move(i, j, piece);
+                                BlackMoves.add(move);
+                            }
+                        }
+                        break;
+
+                    case BN : // Black knight
+                    {
+                        int dirs[8] = {NNW, NNE, NWW, NEE, SSW, SSE, SWW, SEE};
+
+                        for (int k = 0; k < 8; ++k) {
+                            int dir = dirs[k];
+
+                            j = i + dir;
+                            if (get_square(j).getOwner().getName() != IV)
+                                if (get_square(j).getOwner().getName() >= 0) {
+                                    Move move(i, j, piece);
+                                    BlackMoves.add(move);
+                                }
+                        }
+                    }
+                        break;
+
+                    case BB : // Black bishop
+                    {
+                        int dirs[4] = {NE, NW, SE, SW};
+
+                        for (int k = 0; k < 4; ++k) {
+                            int dir = dirs[k];
+                            j = i;
+                            while (true) {
+                                j += dir;
+                                if (get_square(j).getOwner().getName() == IV) break;
+                                if (get_square(j).getOwner().getName() >= 0) {
+                                    Move move(i, j, piece);
+                                    BlackMoves.add(move);
+                                    if (get_square(j).getOwner().getName() > 0)
+                                        break;
+                                } else
+                                    break;
+                            }
+                        }
+                    }
+
+                        break;
+
+                    case BR : // Black rook
+                    {
+                        int dirs[4] = {N, E, S, W};
+
+                        for (int k = 0; k < 4; ++k) {
+                            int dir = dirs[k];
+                            j = i;
+                            while (true) {
+                                j += dir;
+                                if (get_square(j).getOwner().getName() == IV) break;
+                                if (get_square(j).getOwner().getName() >= 0) {
+                                    Move move(i, j, piece);
+                                    BlackMoves.add(move);
+                                    if (get_square(j).getOwner().getName() > 0)
+                                        break;
+                                } else
+                                    break;
+                            }
+                        }
+                    }
+
+                        break;
+
+                    case BQ : // Black queen
+                    {
+                        int dirs[8] = {NE, NW, SE, SW, N, E, S, W};
+
+                        for (int k = 0; k < 8; ++k) {
+                            int dir = dirs[k];
+                            j = i;
+                            while (true) {
+                                j += dir;
+                                if (get_square(j).getOwner().getName() == IV) break;
+                                if (get_square(j).getOwner().getName() >= 0) {
+                                    Move move(i, j, piece);
+                                    BlackMoves.add(move);
+                                    if (get_square(j).getOwner().getName() > 0)
+                                        break;
+                                } else
+                                    break;
+                            }
+                        }
+                    }
+
+                        break;
+
+                    case BK : // Black king
+                    {
+                        int dirs[8] = {NE, NW, SE, SW, N, E, S, W};
+
+                        for (int k = 0; k < 8; ++k) {
+                            int dir = dirs[k];
+
+                            j = i + dir;
+                            if (get_square(j).getOwner().getName() != IV)
+                                if (get_square(j).getOwner().getName() >= 0) {
+                                    Move move(i, j, piece);
+                                    BlackMoves.add(move);
+                                }
+                        }
+
+                    }
+
+                        break;
+
+                    default : // Invalid, wrong color, or empty
+                        continue;
+                }
+            }
+        } // done with black pieces
+
+
 
 
 

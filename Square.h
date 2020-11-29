@@ -62,8 +62,7 @@ public:
     //piece
     bool isChecked() const; //returns true if king is owner of square and checked, false otherwise
     bool Promotion() const; //first and last rows method, indicates the possibility from pawn's promotion
-    bool
-    capture(const Piece &new_owner); //in case of capture, gameplay mechanism calls this method to handle capture properly
+    bool capture(const Piece &new_owner); //in case of capture, gameplay mechanism calls this method to handle capture properly
 
     bool const &getColor() const;
 

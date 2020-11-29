@@ -1,20 +1,15 @@
 #include <iostream>
-#include <cstdio>
-
 #include "Board.h"
 
 
 int main() {
-      Board* b = new Board;
-      b->init();
-      cout << *b;
-      b->find_legal_moves();
-    for (int i = 0; i < b->WhiteMoves.get_size(); i++) {
-        cout << b->WhiteMoves[i] << endl;
+    Board *b = new Board;
+    b->init();
+    cout << *b;
+    b->find_legal_moves();
+    Move move(81, 61, BP);
+    b->make_move(move);
+   cout << *b;
 
+        return 0;
     }
-
-
-        cout << b->get_square(24).getOwner().getName();
-    return 0;
-}

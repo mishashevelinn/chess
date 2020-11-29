@@ -107,6 +107,11 @@ private:
 
     bool first_move; //used to handle king's pawns and rook's stuff
 
+public:
+    bool operator==(const Piece &rhs) const;
+
+    bool operator!=(const Piece &rhs) const;
+
 };
 
 

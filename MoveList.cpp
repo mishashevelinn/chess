@@ -20,8 +20,20 @@ bool MoveList::add(const Move &move) {
 }
 
 bool MoveList::clear() {
-    for (int i = 0; i < size; i++) {    //this is for inner order.
+    for (int i = 0; i < size; i++) //this is for inner order.
+    {
         moves[i] = Move();
     }
     size = 0;   //limiting traversal ability;
+}
+
+bool MoveList::in(const Move &move) const {
+    for (int i = 0; i < size; i++)
+    {
+        if (move == moves[i])
+            return true;
+    }
+
+    return false;
+
 }

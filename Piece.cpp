@@ -47,3 +47,13 @@ bool Piece::operator==(int i) const {
     return name == i;
 }
 
+bool Piece::operator==(const Piece &rhs) const {
+    return name == rhs.name;
+
+
+}
+
+bool Piece::operator!=(const Piece &rhs) const {
+    return !(rhs == *this);
+}
+

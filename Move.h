@@ -27,7 +27,13 @@ public:
     friend std::ostream &operator<<(std::ostream &os, Move const &m) {
         return os << m.piece << ": " << m.getSource()
                   << " --> " << m.getDest();
-    };
+    }
+
+    bool operator==(const Move &rhs) const;
+
+    bool operator!=(const Move &rhs) const;;
+
+
 
 private:
     int source;

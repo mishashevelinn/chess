@@ -61,7 +61,7 @@ private:
 
 
     bool white_king_checked;
-    bool turn;
+    bool white_turn;
 
 
     bool isValidMove(const Move &m) const;
