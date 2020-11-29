@@ -11,24 +11,26 @@
 
 class Game {
 public:
-    Game(Board board) : board(board) {};
+    Game() : board(new Board()) {num_turn = 1;}
 
     void game_loop(); //invokes other methods and controls the game flow
 
     void display_board() const { cout << board; }
 
-    string get_input();
+    bool valid_option(string str);
 
-    bool isValidInput(string) const;
+    int str_to_move(const string & str, Move & move) const ;
+
+    bool str_square_check(const string & str_square) const;
 
 
 
 
 private:
     Game(const Game &) {} //Only one game played at a time
-    Board board;
+    Board* board;
     string curr_move;
-    unsigned int counter; //counting moves for display 1) , 2) ...
+    int num_turn; //counting moves for display 1) , 2) ...
 
 
 };

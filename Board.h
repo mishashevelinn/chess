@@ -54,6 +54,14 @@ public:
 
     void set_square(int position, Piece &new_owner) const;
 
+    bool mate_to_white;
+    bool mate_to_black;
+    bool stalemate;
+    bool ins_material;
+    bool white_turn;
+    bool promotion;
+
+
 
 
 private:
@@ -61,7 +69,7 @@ private:
 
 
     bool white_king_checked;
-    bool white_turn;
+
 
 
     bool isValidMove(const Move &m) const;

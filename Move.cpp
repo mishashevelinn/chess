@@ -5,9 +5,12 @@
 #include "Move.h"
 
 
-Move::Move(int i, int j, const Piece &p) : source(i), dest(j), piece(p) {
+Move::Move(int i, int j, const Piece &p, bool promoted) : source(i), dest(j), piece(p) {
 }
-
+Move::Move(int i, int j) : source(i), dest(j)
+{
+    piece = Piece();
+}
 
 Move::Move() : source(-1), dest(-1), piece(2, EM) {
 

@@ -17,12 +17,15 @@ const static string dic = ".A8B8C8D8E8F8G8H8A7B7C7D7E7F7G7H7A6B6C6D6E6F6G6H6A5B5
 class Move {
 public:
     Move();
-
-    Move(int i, int j, const Piece &p);
+    Move(int i, int j, const Piece &p, bool promoted= false);
+    Move(int i, int j);
 
     int getSource() const { return source; }
-
     int getDest() const { return dest; }
+
+    void setSource(int i) {source = i;}
+    void setDest(int j) {dest = j;}
+
 
     friend std::ostream &operator<<(std::ostream &os, Move const &m) {
         Square square_from(m.getSource());
