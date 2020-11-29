@@ -13,12 +13,12 @@ using namespace std;
 Piece empty = Piece(2, EM);
 
 
-Board::Board() : board(new Square[120]), white_turn(false) {
+Board::Board() : board(new Square[120]), white_turn(true) {
 
 }
 
 std::ostream &operator<<(std::ostream &os, const Board &rhs) {
-    static const char pieces[] = "kqrbnp.PNBRQK";
+    static const char pieces[] = "KQRBNP.pnbrqk";
 
     for (int row = 8; row >= 1; --row) {
         os << row << " ";
@@ -31,7 +31,7 @@ std::ostream &operator<<(std::ostream &os, const Board &rhs) {
         }
         os << std::endl;
     }
-    os << "  a b c d e f g h" << std::endl;
+    os << "  A B C D E F G H" << std::endl;
 
 
     if (rhs.white_king_checked && rhs.white_turn) {
@@ -71,7 +71,7 @@ void Board::init() {
 }
 
 
-bool Board::make_move(Move const &m) {
+bool Board::make_move(Move const &m)  {
     Piece moved_piece = board[m.getSource()].getOwner();
     if (!isValidMove(m)) {
         cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
@@ -94,7 +94,7 @@ bool Board::make_move(Move const &m) {
 
 
 bool Board::isValidMove(const Move &m) const {
-    if (get_square(m.getSource()) == EM) return false; //piece == int overload
+    if (get_square(m.getSource()) == EM) return false;
     if (get_square(m.getSource()).getOwner().getName() < 0 && white_turn) return false;
     if (get_square(m.getSource()).getOwner().getName() > 0 && !white_turn) return false;
     if(white_turn && WhiteMoves.in(m)) return true;

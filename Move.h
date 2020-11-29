@@ -25,8 +25,10 @@ public:
     int getDest() const { return dest; }
 
     friend std::ostream &operator<<(std::ostream &os, Move const &m) {
-        return os << m.piece << ": " << m.getSource()
-                  << " --> " << m.getDest();
+        Square square_from(m.getSource());
+        Square square_to(m.getDest());
+        return os << m.piece << ": " << square_from
+                  << " --> " << square_to;
     }
 
     bool operator==(const Move &rhs) const;
