@@ -22,7 +22,7 @@ void Game::game_loop() {
         err: getline(cin, str_move);
         if (!cin) { return; }
         if (valid_option(str_move)) {
-            Move move(-1, -1);
+            Move move;
             str_to_move(str_move, move);
             if (!board->make_move(move))
             {
@@ -47,7 +47,7 @@ bool Game::valid_option(string str) {
     string temp;
     stringstream s(str);
     while (s >> temp) { word_counter++; }
-    if (word_counter < 2 || word_counter > 3)
+    if (word_counter < 2 || word_counter > 3 || (board->promotion && word_counter != 3))
         return false;
 
     word_counter = 0;
@@ -80,6 +80,7 @@ bool Game::valid_option(string str) {
 
         if (!str_square_check(temp)) { return false; }
     }
+
     return true;
 }
 
@@ -105,6 +106,9 @@ int Game::str_to_move(const string &str, Move &move) const {
             int row_number_target = (((int) str[4] - 28) % 10 + 1) * 10;
             move.setDest(column_number_target + row_number_target);
 
+            move.promoted = true;
+            move.setPromoted(str_to_name(str[6]));
+
 
         }
             break;
@@ -120,4 +124,30 @@ bool Game::str_square_check(const string &str_square) const {
         return false;
     return true;
 
+}
+
+int Game::str_to_name(const char &str_name) const{
+    char c = str_name;
+    switch (c) {
+        case 'q' :
+            return WQ;
+        case 'r' :
+            return WR;
+        case 'b' :
+            return WB;
+        case 'n' :
+            return WN;
+        case 'Q' :
+            return BQ;
+        case 'R':
+            return BR;
+        case 'B':
+            return BB;
+        case 'N' :
+            return BN;
+        default:
+            cerr<<"ERROR WHILE ANALYZING PROMOTION CANDIDATE"<< __FILE__<<__LINE__<<endl; //TODO erase whenever after
+
+    }
+    return 0;
 }

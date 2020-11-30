@@ -23,6 +23,8 @@ public:
 
     bool str_square_check(const string & str_square) const;
 
+    int str_to_name(const char & str_name) const;
+
 
 
 

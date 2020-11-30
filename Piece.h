@@ -30,12 +30,9 @@ using namespace std;
 
 class Piece {
 public:
-    Piece();
+    Piece(): name(EM), move_counter(0) {};
 
-    Piece(int color, int name);
-    Piece(int color) : name(10){};
-
-    int getColor() const { return color; }
+    Piece(int name) : name(name), move_counter(0){}
 
     int getName() const { return name; }
 
@@ -45,9 +42,16 @@ public:
 
     void setName(int new_name);
 
-    void setColor(int new_Color);
-
     bool operator==(int) const;
+
+    void set_first_move() { first_move = true; }
+
+    bool get_first_move() const { return first_move; }
+
+    void move_counter_increase() { move_counter++;}
+    int get_counter() const  { return  move_counter; }
+    void set_counter(int i) { move_counter = i;}
+
 
 
     friend std::ostream &operator<<(std::ostream &os, Piece const &p) {
@@ -101,12 +105,10 @@ public:
     virtual ~Piece();
 
 private:
-    int color;
     int name;
     int position;
-
     bool first_move; //used to handle king's pawns and rook's stuff
-
+    int move_counter;
 public:
     bool operator==(const Piece &rhs) const;
 

@@ -10,18 +10,17 @@
 #include <ostream>
 #include "Square.h"
 
-
-const static string dic = ".A8B8C8D8E8F8G8H8A7B7C7D7E7F7G7H7A6B6C6D6E6F6G6H6A5B5C5D5E5F5G5H5A4B4C4D4E4F4G4H4A3B3C3D3E3F3G3H3A2B2C2D2E2F2G2H2A1B1C1D1E1F1G1H1";
-
-
 class Move {
 public:
     Move();
-    Move(int i, int j, const Piece &p, bool promoted= false);
-    Move(int i, int j);
+    Move(int i, int j, const Piece &p=Piece(),bool promoted=false, const Piece & promoted_piece=Piece(), bool en_passant=false);
+
 
     int getSource() const { return source; }
     int getDest() const { return dest; }
+    const Piece & getPromoted() const { return promoted_piece; }
+    void setPromoted(int name) { promoted_piece.setName(name);}
+
 
     void setSource(int i) {source = i;}
     void setDest(int j) {dest = j;}
@@ -38,12 +37,16 @@ public:
 
     bool operator!=(const Move &rhs) const;;
 
+    bool promoted;
 
 
+    bool en_passant;
 private:
     int source;
     int dest;
     Piece piece;
+    Piece promoted_piece;
+
 
 };
 
