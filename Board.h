@@ -40,13 +40,13 @@ public:
     MoveList WhiteMoves;
     MoveList BlackMoves;
 
-    bool make_move(const Move &m);
+    bool make_move(Move &m);
 
     Square const &get_square(int position) const;
 
     const Square &operator[](int position) const { return board[position]; }
 
-    void find_legal_moves();
+    void find_legal_moves(Move &m);
 
     void test();
 
@@ -61,6 +61,7 @@ public:
     bool white_turn;
     bool promotion;             //Flag to handle pawn's promotion
 
+    bool is_ckecked(const Square & s) const;
 
 
 
@@ -71,12 +72,12 @@ private:
 
     bool white_king_checked;
 
-    bool isValidMove(const Move &m) const;
+    bool isValidMove(Move &m) const;
 
     void init_players();
 
 
-
+    bool peek_move(Move &m);
 };
 
 

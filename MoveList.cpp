@@ -27,11 +27,13 @@ bool MoveList::clear() {
     size = 0;   //limiting traversal ability;
 }
 
-bool MoveList::in(const Move &move) const {
+bool MoveList::in(Move &move) const {
     for (int i = 0; i < size; i++)
     {
-        if (move == moves[i])
+        if (move == moves[i]) {
+            move = moves[i];
             return true;
+        }
     }
 
     return false;

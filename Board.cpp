@@ -4,7 +4,8 @@
 
 
 
-
+#include <cstdio>
+#include <cstdlib>
 #include "Board.h"
 #include <iostream>
 
@@ -70,9 +71,9 @@ void Board::init() {
     }
 }
 
+bool Board::peek_move(Move &m) {
 
-bool Board::make_move(Move const &m)  {
-    find_legal_moves();
+    find_legal_moves(m);
 
     if (!isValidMove(m)) {
         cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
@@ -80,29 +81,91 @@ bool Board::make_move(Move const &m)  {
     }
 
     Piece moved_piece = board[m.getSource()].getOwner();
-    moved_piece.move_counter_increase();
 
-    if(m.en_passant)
-    {
+    if (m.en_passant) {
         switch (white_turn) {
             case true:
                 set_square(m.getDest() - 10, empty);
+                cout<< "EMPASANT" << endl;
                 //TODO decrement black pawns counter
-            case fasle:
+            case false:
                 set_square(m.getDest() + 10, empty);
                 //TODO decrement white pawns counter
         }
     }
 
+    //White king's castling
+
+    if (get_square(m.getSource()).getOwner() == WK) {
+        if (m.getDest() - m.getSource() == 2) {
+            Piece r(WR);
+            set_square(F1, r);
+            set_square(H1, empty);
+        }
+        if (m.getDest() - m.getSource() == -2) {
+            Piece r(WR);
+            set_square(D1, r);
+            set_square(A1, empty);
+        }
+    }
+    //Black king's castling
+    if (get_square(m.getSource()).getOwner() == BK) {
+        if (m.getDest() - m.getSource() == 2) {
+            Piece R(BR);
+            set_square(F8, R);
+            set_square(H8, empty);
+        }
+        if (m.getDest() - m.getSource() == -2) {
+            Piece r(WR);
+            set_square(D8, r);
+            set_square(A8, empty);
+        }
+    }
+    //Pawn's promotion
+    if (m.promoted) {
+        moved_piece.setName(m.getPromoted().getName());
+    }
+    moved_piece.move_counter_increase();
     set_square(m.getDest(), moved_piece);
     set_square(m.getSource(), empty);
+    return true;
 
-//    if()
+
+}
+
+
+bool Board::make_move(Move &m) {
+    if (!peek_move(m)) { return false; }
+    find_legal_moves(m);
+
+
+    Piece moved_piece = board[m.getSource()].getOwner();
+    moved_piece.move_counter_increase();
+
+    switch (white_turn) {
+        case true:
+            for (int i = A1; i <= H8; i++) {
+                if (get_square(i).getOwner() == WK && is_ckecked(get_square(i))) {
+                    set_square(m.getSource(), moved_piece);
+                    set_square(m.getDest(), empty);
+                    return false;
+                }
+
+            }
+        case false:
+            for (int i = A1; i <= H8; i++) {
+                if (get_square(i).getOwner() == BK && is_ckecked(get_square(i))) {
+                    set_square(m.getSource(), moved_piece);
+                    set_square(m.getDest(), empty);
+                    return false;
+                }
+
+            }
+    }
 
 
     cout << moved_piece.get_counter() << " move of " << moved_piece << " succeed" << endl;
-
-    white_turn  = !white_turn;
+    white_turn = !white_turn;
     return true;
 
 
@@ -111,17 +174,17 @@ bool Board::make_move(Move const &m)  {
 /*using array of counters to keep track of dead and alive pieces */
 
 
-bool Board::isValidMove(const Move &m) const {
+bool Board::isValidMove(Move &m) const {
     if (get_square(m.getSource()) == EM) return false;
     if (get_square(m.getSource()).getOwner().getName() < 0 && white_turn) return false;
     if (get_square(m.getSource()).getOwner().getName() > 0 && !white_turn) return false;
-    if(white_turn && WhiteMoves.in(m)) return true;
-    if(!white_turn && BlackMoves.in(m)) return true;
+    if (white_turn && WhiteMoves.in(m)) return true;
+    if (!white_turn && BlackMoves.in(m)) return true;
     return false;
 }
 
 void Board::set_square(int position, Piece &new_owner) const {
-    board[position] = new_owner;
+    board[position].owner = new_owner;
     new_owner.setPosition(position);
     board[position].setID(position);
 }
@@ -130,7 +193,7 @@ Square const &Board::get_square(int position) const {
     return board[position];
 }
 
-void Board::find_legal_moves() {
+void Board::find_legal_moves(Move & m) {
     WhiteMoves.clear(); //clear all moves lists each time before starting counting
     BlackMoves.clear();
 
@@ -147,20 +210,20 @@ void Board::find_legal_moves() {
                             if (i > 80) //check for promotion
                             {
                                 {
-                                    Move move(i, j, piece, true, WQ); //move object is aware of a piece which has done the move
+                                    Move move(i, j, piece, true,
+                                              WQ); //move object is aware of a piece which has done the move
                                     WhiteMoves.add(move);
 
-                                    Move move2(i,j, piece, true, WN);
+                                    Move move2(i, j, piece, true, WN);
                                     WhiteMoves.add((move2));
 
-                                    Move move3(i,j,piece, true, WB);
+                                    Move move3(i, j, piece, true, WB);
                                     WhiteMoves.add(move3);
 
-                                    Move move5(i,j, piece, true, WR);
+                                    Move move5(i, j, piece, true, WR);
                                     WhiteMoves.add(move3);
 
                                 }
-
 
 
                             } else    //regular pawn move
@@ -178,32 +241,30 @@ void Board::find_legal_moves() {
                         }//done with one square forward options
                         j = i + 9; //Diagonal capture
                         if (get_square(j).isOccupied() &&
-                            get_square(j).getOwner().getName() < 0) //TODO overload < for pieces
-                        {
+                            get_square(j).getOwner().getName() < 0) {
                             if (i > 80) { //check for promotion
                                 Move move(i, j, piece, true, WQ);
                                 WhiteMoves.add(move);
 
-                                Move move2(i,j, piece, true, WN);
+                                Move move2(i, j, piece, true, WN);
                                 WhiteMoves.add((move2));
 
-                                Move move3(i,j,piece, true, WB);
+                                Move move3(i, j, piece, true, WB);
                                 WhiteMoves.add(move3);
 
-                                Move move5(i,j, piece, true, WR);
-                                WhiteMoves.add(move3);
+                                Move move4(i, j, piece, true, WR);
+                                WhiteMoves.add(move4);
                             } else {
                                 Move move(i, j, piece, false);
                                 WhiteMoves.add(move);
                             }
                         }
-                        if( A5<=i && i<= H5)    //En Passant
+                        if (A5 <= i && i <= H5)    //En Passant
                         {
                             if (get_square(i - 1).isOccupied() &&
-                                get_square(i - 1).getOwner().getName() < 0 &&
-                                get_square(i - 1).getOwner().get_counter() == 1)
-                            {
-                                Move move(i, j, piece, false);
+                                get_square(i - 1).getOwner().getName() == BP &&
+                                get_square(i - 1).getOwner().get_counter() == 1) {
+                                Move move(i, j, piece, false, Piece(), true);
                                 WhiteMoves.add(move);
                             }
                         }
@@ -211,19 +272,27 @@ void Board::find_legal_moves() {
                         if (get_square(j).isOccupied() && get_square(j).getOwner().getName() < 0) {
                             if (i > 80) //Check for promotion
                             {
-                                Move move(i, j, piece, true);
-                                WhiteMoves.add(move); //TODO inform about promotion
+                                Move move(i, j, piece, true, WQ);
+                                WhiteMoves.add(move);
+
+                                Move move2(i, j, piece, true, WN);
+                                WhiteMoves.add((move2));
+
+                                Move move3(i, j, piece, true, WB);
+                                WhiteMoves.add(move3);
+
+                                Move move4(i, j, piece, true, WR);
+                                WhiteMoves.add(move4);
                             } else {
                                 Move move(i, j, piece, false);
                                 WhiteMoves.add(move);
                             }
                         }
-                        if( A5<=i && i<= H5)    //En Passant
+                        if (A5 <= i && i <= H5)    //En Passant
                         {
                             if (get_square(i + 1).isOccupied() &&
-                                get_square(i + 1).getOwner().getName() < 0 &&
-                                get_square(i+ 1).getOwner().get_counter() == 1)
-                            {
+                                get_square(i + 1).getOwner().getName() == BP &&
+                                get_square(i + 1).getOwner().get_counter() == 1) {
                                 Move move(i, j, piece, false, Piece(), true);
                                 WhiteMoves.add(move);
                             }
@@ -231,7 +300,7 @@ void Board::find_legal_moves() {
 
                         break; //done with white pawn
 
-                    case WN : //white knight
+                    case WN : //white Knight
                     {
                         int dirs[8] = {NNW, NNE, NWW, NEE, SSW, SSE, SWW, SEE};
                         for (int k = 0; k < 8; ++k) {
@@ -302,7 +371,8 @@ void Board::find_legal_moves() {
                                 j += dir;
                                 if (get_square(j).getOwner().getName() == IV)
                                     break;  //stop condition - edge of the board is reached
-                                if (get_square(j).getOwner().getName() <=0) //next square in current direction is occupied by black piece or empty
+                                if (get_square(j).getOwner().getName() <=
+                                    0) //next square in current direction is occupied by black piece or empty
                                 {
                                     Move move(i, j, piece, false, Piece());
                                     WhiteMoves.add(move);
@@ -329,6 +399,43 @@ void Board::find_legal_moves() {
                                     WhiteMoves.add(move);
                                 }
                         }
+                        /*Castling*/
+                        if (get_square(i).getOwner().get_counter() == 0 && //king's first move
+                            get_square(A1).getOwner().getName() == WR &&    //Left Rook's first move
+                            get_square(A1).getOwner().get_counter() == 0) {
+                            int empty_squares = 0;
+                            for (int k = B1; k <= D1; k++) {
+                                if (!get_square(k).isOccupied())
+                                    empty_squares++;
+                            }
+                            if (empty_squares == 3) //squares are free
+                            {
+                                if (!is_ckecked(get_square(D1)) &&
+                                    !is_ckecked(get_square(C1))) {   //free squares are not checked
+                                    Move move(i, i - 2);
+                                    WhiteMoves.add(move);
+                                }
+                            }
+
+
+                        }
+                        if (get_square(i).getOwner().get_counter() == 0 && //king's first move
+                            get_square(H1).getOwner().getName() == WR &&    //Right Rook's first move
+                            get_square(H1).getOwner().get_counter() == 0) {
+                            int empty_squares = 0;
+                            for (int k = E1; k <= G1; k++) {
+                                if (!get_square(k).isOccupied())
+                                    empty_squares++;
+                            }
+                            if (empty_squares == 2) {
+                                if (!is_ckecked(get_square(F1)) &&
+                                    !is_ckecked(get_square(G1))) {   //free squares are not in check
+                                    Move move(i, i + 2);
+                                    WhiteMoves.add(move);
+                                }
+                            }
+                        }
+
                     }
                         break;
 
@@ -376,8 +483,18 @@ void Board::find_legal_moves() {
                             if (i < 40) // Check for promotion
                             {
                                 {
-                                    Move move(i, j, piece, true, Piece());
+                                    Move move(i, j, piece, true, BQ);
                                     BlackMoves.add(move);
+
+                                    Move move1(i, j, piece, true, BB);
+                                    BlackMoves.add(move);
+
+                                    Move move2(i, j, true, BN);
+                                    BlackMoves.add(move2);
+
+                                    Move move3(i, j, true, BR);
+                                    BlackMoves.add(move3);
+
                                 }
 
 
@@ -386,12 +503,13 @@ void Board::find_legal_moves() {
                                 BlackMoves.add(move);
                             }
                         }
-                        if(get_square(i+1).isOccupied() && get_square(i+1).getOwner().getName() >0)
+                        if (A4 <= i && i <= H4)    //En Passant
                         {
-                            if(get_square( i + 1).getOwner().get_counter() == 1)
-                            {
-                                Move move(i,j,piece, false, Piece(), true);
-                                BlackMoves.add(move);
+                            if (get_square(i - 1).isOccupied() &&
+                                get_square(i - 1).getOwner().getName() == WP &&
+                                get_square(i - 1).getOwner().get_counter() == 1) {
+                                Move move(i, j, piece, false, Piece(), true);
+                                WhiteMoves.add(move);
                             }
                         }
 
@@ -409,12 +527,13 @@ void Board::find_legal_moves() {
                                 BlackMoves.add(move);
                             }
                         }//En Passant
-                        if(get_square(i-1).isOccupied() && get_square(i-1).getOwner().getName() >0)
+                        if (A4 <= i && i <= H4)    //En Passant
                         {
-                            if(get_square( i - 1).getOwner().get_counter() == 1)
-                            {
-                                Move move(i,j,piece, false, Piece(), true);
-                                BlackMoves.add(move);
+                            if (get_square(i + 1).isOccupied() &&
+                                get_square(i + 1).getOwner().getName() == WP &&
+                                get_square(i + 1).getOwner().get_counter() == 1) {
+                                Move move(i, j, piece, false, Piece(), true);
+                                WhiteMoves.add(move);
                             }
                         }
                         break;
@@ -519,6 +638,36 @@ void Board::find_legal_moves() {
                                     BlackMoves.add(move);
                                 }
                         }
+                        if (get_square(i).getOwner().get_counter() == 0 && //king's first move
+                            get_square(A8).getOwner().getName() == BR &&    //Left Rook's first move
+                            get_square(A8).getOwner().get_counter() == 0) {
+                            int empty_squares = 0;
+                            for (int k = C8; k <= D8; k++) {
+                                if (!get_square(k).isOccupied() && !is_ckecked(get_square(k)))
+                                    empty_squares++;
+                            }
+                            if (empty_squares == 2) {
+                                Move move(i, i - 2);
+                                WhiteMoves.add(move);
+                            }
+
+
+                        }
+                        if (get_square(i).getOwner().get_counter() == 0 && //king's first move
+                            get_square(H8).getOwner().getName() == BR &&    //Right Rook's first move
+                            get_square(H8).getOwner().get_counter() == 0) {
+                            int empty_squares = 0;
+                            for (int k = F1; k <= G1; k++) {
+                                if (!get_square(k).isOccupied() && !is_ckecked(get_square(k)))
+                                    empty_squares++;
+                            }
+                            if (empty_squares == 2) {
+                                Move move(i, i + 2);
+                                WhiteMoves.add(move);
+                            }
+
+
+                        }
 
                     }
 
@@ -554,5 +703,24 @@ void Board::find_legal_moves() {
 //    A1 = 56, B1, C1, D1, E1, F1, G1, H1,
 //};
 
+
+}
+
+bool Board::is_ckecked(const Square &s) const {
+    if (s.getOwner().getName() < 0 && s.getOwner().getName() != IV) //black piece is inspected
+    {
+        for (int i = 0; i < WhiteMoves.size; i++) {
+            if (s.getId() == WhiteMoves[i].getDest())
+                return true;
+        }
+    }
+    if (s.getOwner().getName() > 0 && s.getOwner().getName() != IV) //white piece is inspected
+    {
+        for (int i = 0; i < BlackMoves.size; i++) {
+            if (s.getId() == BlackMoves[i].getDest())
+                return true;
+        }
+    }
+    return false; //Empty or invalid square
 
 }

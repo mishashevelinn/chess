@@ -18,7 +18,7 @@ public:
 
     int get_size() const { return size; }
 
-    bool in(const Move & move) const;
+    bool in(Move & move) const;
 
     const Move &operator[](unsigned int index) const
     {

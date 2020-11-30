@@ -37,6 +37,14 @@ public:
 
     bool operator!=(const Move &rhs) const;;
 
+    void operator=(const Move & rhs){
+        source = rhs.source;
+        dest = rhs.dest;
+        piece = rhs.piece;
+        promoted_piece = rhs.promoted_piece;
+        en_passant = rhs.en_passant;
+    }
+
     bool promoted;
 
 

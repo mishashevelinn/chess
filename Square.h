@@ -70,10 +70,11 @@ public:
     bool operator==(const Square &rhs) const;
 
     void operator=( Piece & p) { setOwner(p); }
+    Piece owner;
 
 
 private:
-    Piece owner;
+
     int id;
 
 

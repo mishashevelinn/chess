@@ -114,6 +114,14 @@ public:
 
     bool operator!=(const Piece &rhs) const;
 
+    void operator=(const Piece & rhs){
+        name = rhs.name;
+        position = rhs.position;
+        first_move = rhs.first_move;
+        move_counter = rhs.move_counter;
+    }
+
+
 };
 
 

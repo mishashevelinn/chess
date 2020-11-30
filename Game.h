@@ -24,13 +24,14 @@ public:
     bool str_square_check(const string & str_square) const;
 
     int str_to_name(const char & str_name) const;
+    Board* board;
 
 
 
 
 private:
     Game(const Game &) {} //Only one game played at a time
-    Board* board;
+
     string curr_move;
     int num_turn; //counting moves for display 1) , 2) ...
 
