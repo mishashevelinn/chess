@@ -37,8 +37,8 @@ public:
                   << " --> " << square_to;
     }
 
-    bool isRightCastlig() const {return (dest - source) == 2;}
-    bool isLeftCastlig() const {return (dest - source) == -2;}
+    bool isRightCastlig() const {return ((dest - source) == 2) && (piece.getName() == BK || piece.getName() == WK);}
+    bool isLeftCastlig() const {return ((dest - source) == -2) && (piece.getName() == BK || piece.getName() == WK);}
 
     bool operator==(const Move &rhs) const;
 

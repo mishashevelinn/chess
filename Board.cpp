@@ -73,8 +73,6 @@ void Board::init() {
 
 
 bool Board::peek_move(Move &m) {
-
-
     find_legal_moves(m);
 
     if (!isValidMove(m)) {
@@ -93,66 +91,15 @@ bool Board::peek_move(Move &m) {
     }
 /***********************Castling**********************************/
     if (m.isLeftCastlig() || m.isRightCastlig()) {
-        int name = get_square(m.getSource()).getOwner().getName();
-        if (get_square(m.getSource()).getOwner().get_counter() != 0) return false;
-
-        if (white_turn) {
-
-            if (name == WK) {
-
-                if (m.isLeftCastlig()) //e1 d1 c1
-                {
-                    if (get_square(A1).getOwner().get_counter() != 0) return false;
-                    for (int i = C1; i <= E1; i++) {
-                        if (is_checked(get_square(i).getId()))
-                            return false;
-                    }
-                    do_castling(m);
-                    return true;
-
-                }
-                if (m.isRightCastlig()) { //e1 f1 g1
-                    if (get_square(H1).getOwner().get_counter() != 0) return false;
-                    for (int i = E1; i <= G1; i++) {
-                        if (is_checked(get_square(i).getId()))
-                            return false;
-                    }
-                    do_castling(m);
-                    return true;
-
-                }
-            }
-
-        } else if (name == BK) {
-            if (m.isLeftCastlig()) //e1 d1 c1
-            {
-                if (get_square(A8).getOwner().get_counter() != 0) return false;
-                for (int i = C8; i <= E8; i++) {  //c8 d8 e8
-                    if (is_checked(get_square(i).getId()))
-                        return false;
-                }
-                do_castling(m);
-                return true;
-
-            }
-            if (m.isRightCastlig()) { //e1 f1 g1
-                if (get_square(H8).getOwner().get_counter() != 0) return false;
-
-                for (int i = E8; i <= G8; i++) {
-                    if (is_checked(get_square(i).getId()))
-                        return false;
-                }
-                do_castling(m);
-                return true;
-
-            }
-        }
+        if(!canCastle(m)) return false;
+        do_castling(m);
     }
-    /****************************END**CASTLING********************/
+
     //Pawn's promotion
     if (m.promoted) {
         moved_piece.setName(m.getPromoted().getName());
     }
+    moved_piece.move_counter_increase();
     set_square(m.getDest(), moved_piece);
     set_square(m.getSource(), empty);
     return true;
@@ -163,38 +110,20 @@ bool Board::peek_move(Move &m) {
 
 bool Board::make_move(Move &m) {
     Board backup = Board(*this);
-    if (!peek_move(m)) { return false; }
-    find_legal_moves(m);
     Piece moved_piece = board[m.getDest()].getOwner();
+
+    if (!peek_move(m)) { return false; }
+
+    find_legal_moves(m); //TODO do i need this?
+
+    /*roll back move if it leads to current player's check*/
     if(white_turn && is_white_king_checked()) { *this = backup; return false;}
     if(!white_turn && is_black_king_checked()) {*this = backup; return false;}
-//    if (white_turn) {
-//        for (int i = A1; i <= H8; i++) {
-//            if (get_square(i).getOwner() == WK && is_checked(get_square(i).getId())) {
-//                set_square(m.getSource(), moved_piece);
-//                set_square(m.getDest(), empty);
-//                white_king_checked = true;
-//                return false;
-//            }
-//
-//        }
-//        white_king_checked = false;
-//    } else {
-//        for (int i = A1; i <= H8; i++) {
-//            if (get_square(i).getOwner() == BK && is_checked(get_square(i).getId())) {
-//                set_square(m.getSource(), moved_piece);
-//                set_square(m.getDest(), empty);
-//                white_king_checked = true; //TODO matcheck is here
-//                return false;
-//            }
-//        }
-//        white_king_checked = false;
-//    }
+
     moved_piece.move_counter_increase();
 
     white_turn = !white_turn;
     mat_check();
-    pat_check();
 
 
     return true;
@@ -431,13 +360,17 @@ void Board::find_legal_moves(Move &m) {
                     }
                     /*Castling*/
 
-                    if (get_square(i + 1).getOwner().getName() == EM && //right side
-                        get_square(i + 2).getOwner().getName() == EM) {
+                    if (i == E1 &&
+                        get_square(i + 1).getOwner().getName() == EM && //right side
+                        get_square(i + 2).getOwner().getName() == EM &&
+                        get_square(H1).getOwner().getName() == WR) {
                         Move move(i, i + 2, piece, false, Piece());
                         WhiteMoves.add(move);
                     }
-                    if (get_square(i - 1).getOwner().getName() == EM  //left side
-                        && get_square(i - 2).getOwner().getName() == EM) {
+                    if (i == E1 &&
+                    get_square(i - 1).getOwner().getName() == EM  //left side
+                        && get_square(i - 2).getOwner().getName() == EM &&
+                        get_square(A1).getOwner().getName() == WR) {
                         Move move(i, i - 2, piece, false, Piece());
                         WhiteMoves.add(move);
                     }
@@ -644,13 +577,17 @@ void Board::find_legal_moves(Move &m) {
                             }
                     }
                     /*Castling*/
-                    if (get_square(i + 1).getOwner().getName() == EM && //right side
-                        get_square(i + 2).getOwner().getName() == EM) {
+                    if (i == E8 &&
+                        get_square(i + 1).getOwner().getName() == EM && //right side
+                        get_square(i + 2).getOwner().getName() == EM &&
+                        get_square(H8).getOwner().getName() == BR) {
                         Move move(i, i + 2, piece);
                         BlackMoves.add(move);
                     }
-                    if (get_square(i - 1).getOwner().getName() == EM  //left side
-                        && get_square(i - 2).getOwner().getName() == EM) {
+                    if (i == E8 &&
+                        get_square(i - 1).getOwner().getName() == EM  //left side
+                        && get_square(i - 2).getOwner().getName() == EM &&
+                        get_square(A8).getOwner().getName() == BR) {
                         Move move(i, i - 2, piece, false, Piece());
                         BlackMoves.add(move);
                     }
@@ -772,7 +709,7 @@ void Board::do_castling(Move &move) {
                 set_square(move.getSource(), empty);
             }
             if (move.isLeftCastlig()) {
-                Piece R(WR);
+                Piece R(BR);
                 set_square(D8, R);
                 set_square(A8, empty);
                 Piece bk(BK);
@@ -829,5 +766,57 @@ bool Board::mat_check() {
 
 bool Board::canCastle(Move &m)
 {
+    int name = get_square(m.getSource()).getOwner().getName();
+    if (get_square(m.getSource()).getOwner().get_counter() != 0) return false;
+    if (white_turn) {
+        if (name == WK) {
+            if(get_square(E1).getOwner().get_counter() != 0) return false;
 
+            if (m.isLeftCastlig()) //e1 d1 c1
+            {
+                if (get_square(A1).getOwner().get_counter() != 0) return false;
+                for (int i = C1; i <= E1; i++) {
+                    if (is_checked(get_square(i).getId()))
+                        return false;
+                }
+                return true;
+
+            }
+            if (m.isRightCastlig()) { //e1 f1 g1
+                if (get_square(H1).getOwner().get_counter() != 0) return false;
+                for (int i = E1; i <= G1; i++) {
+                    if (is_checked(get_square(i).getId()))
+                        return false;
+                }
+                return true;
+
+            }
+        }
+
+    }
+    else {
+        if (name == BK) {
+            if(get_square(E8).getOwner().get_counter() != 0) return false;
+            if (m.isLeftCastlig()) //e1 d1 c1
+            {
+                if (get_square(A8).getOwner().get_counter() != 0) return false;
+                for (int i = C8; i <= E8; i++) {  //c8 d8 e8
+                    if (is_checked(get_square(i).getId()))
+                        return false;
+                }
+                return true;
+
+            }
+            if (m.isRightCastlig()) { //e1 f1 g1
+                if (get_square(E1).getOwner().get_counter() != 0) return false;
+
+                for (int i = E8; i <= G8; i++) {
+                    if (is_checked(get_square(i).getId()))
+                        return false;
+                }
+                return true;
+
+            }
+        }
+    }
 }
