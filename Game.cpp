@@ -84,8 +84,9 @@ bool Game::valid_option(string str) {
             return true;
         }
 
-        if (!str_square_check(temp)) { return false; }
+
     }
+    if (!str_square_check(temp)) { return false; }
 
     return true;
 }
@@ -119,13 +120,16 @@ int Game::str_to_move(const string &str, Move &move) const {
 
         }
             break;
+        default:
+            cerr << "Length Err" << __FILE__ << __LINE__ << endl;
+            return -99;
     }
 }
 
 bool Game::str_square_check(const string &str_square) const {
     if (str_square.length() != 2) { return false; }
-    if (str_square[0] < 65 ||   //Capital letters A - H
-        str_square[0] > 72 ||
+    if ((int)str_square[0] < 65 ||   //Capital letters A - H
+        (int)str_square[0] > 72 ||
         (int) str_square[1] < 49 ||  //Numbers 1 - 8
         (int) str_square[1] > 56)
         return false;

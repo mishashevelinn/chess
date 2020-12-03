@@ -106,6 +106,8 @@ private:
     void pat_check();
 
     bool canCastle( Move &m);
+
+    Move lastMove;
 };
 
 

@@ -14,7 +14,7 @@ using namespace std;
 Piece empty = Piece(EM);
 
 
-Board::Board() : board(new Square[120]), white_turn(true) {
+Board::Board() : board(new Square[120]), white_turn(true), lastMove(Move()) {
 
 }
 
@@ -71,7 +71,6 @@ void Board::init() {
     }
 }
 
-
 bool Board::peek_move(Move &m) {
     find_legal_moves(m);
 
@@ -79,13 +78,17 @@ bool Board::peek_move(Move &m) {
         cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
         return false;
     }
-
     Piece moved_piece = board[m.getSource()].getOwner();
 
+/*************************En*Passant******************************/
     if (m.en_passant) {
         if (white_turn) {
+            Move template_move = Move(m.getDest() + 10, m.getDest() - 10);
+            if (template_move != lastMove) return false;
             set_square(m.getDest() - 10, empty);
         } else {
+            Move template_move = Move(m.getDest() - 10, m.getDest() + 10);
+            if (template_move != lastMove) return false;
             set_square(m.getDest() + 10, empty);
         }
     }
@@ -95,16 +98,19 @@ bool Board::peek_move(Move &m) {
         do_castling(m);
     }
 
+
     //Pawn's promotion
     if (m.promoted) {
+        if(m.getPromoted().getName() == EM){
+            cout << "INVALID INPUT TO MAKE MOVE, PRMOTED PIECE IS MISSING" << endl;
+            //TODO RETURN FALSE;
+        }
         moved_piece.setName(m.getPromoted().getName());
     }
     moved_piece.move_counter_increase();
     set_square(m.getDest(), moved_piece);
     set_square(m.getSource(), empty);
     return true;
-
-
 }
 
 
@@ -124,7 +130,7 @@ bool Board::make_move(Move &m) {
 
     white_turn = !white_turn;
     mat_check();
-
+    lastMove = m;
 
     return true;
 
@@ -169,8 +175,7 @@ void Board::find_legal_moves(Move &m) {
                         if (i > 80) //check for promotion
                         {
                             {
-                                Move move(i, j, piece, true,
-                                          WQ); //move object is aware of a piece which has done the move
+                                Move move(i, j, piece, true,WQ); //move object is aware of a piece which has done the move
                                 WhiteMoves.add(move);
 
                                 Move move2(i, j, piece, true, WN);
@@ -745,10 +750,9 @@ bool Board::mat_check() {
             }
         }
         if (w_counter == 0 && is_white_king_checked()) mate_to_white = true;
-        if(b_counter == 0 &&  is_white_king_checked()) stalemate = true;
+        if(w_counter == 0 &&  is_white_king_checked()) stalemate = true;
 
     } else {
-
         Move m(-1, -1);
         find_legal_moves(m);
         for (int i = 0; i < BlackMoves.get_size(); i++) {
