@@ -191,11 +191,10 @@ bool Board::make_move(Move &m) {
 //        white_king_checked = false;
 //    }
     moved_piece.move_counter_increase();
-//    set_square(m.getDest(), moved_piece);
-
 
     white_turn = !white_turn;
     mat_check();
+    pat_check();
 
 
     return true;
@@ -808,7 +807,8 @@ bool Board::mat_check() {
                 }
             }
         }
-        if (w_counter == 0) mate_to_white = true;
+        if (w_counter == 0 && is_white_king_checked()) mate_to_white = true;
+        if(b_counter == 0 &&  is_white_king_checked()) stalemate = true;
 
     } else {
 
@@ -822,6 +822,8 @@ bool Board::mat_check() {
                     b_counter++;
             }
         }
-        if (b_counter == 0) mate_to_black = true;
+        if (b_counter == 0 && is_black_king_checked()) mate_to_black = true;
+        if(b_counter == 0 && !is_black_king_checked()) stalemate = true;
     }
 }
+

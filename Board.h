@@ -102,6 +102,8 @@ private:
     void roll_back();
 
     void roll_back(const Move &m);
+
+    void pat_check();
 };
 
 
