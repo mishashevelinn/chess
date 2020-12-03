@@ -6,10 +6,7 @@
 int main() {
 
 
-Game *g = new Game();
-g->game_loop();
-
-
-
+Game g;
+g.game_loop();
     return 0;
 }

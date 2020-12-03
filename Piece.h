@@ -34,6 +34,7 @@ public:
 
     Piece(int name) : name(name), move_counter(0){}
 
+
     int getName() const { return name; }
 
     bool setPosition(const int &pos);

@@ -12,6 +12,13 @@ class MoveList {
 public:
     MoveList();
 
+    MoveList(const MoveList & ml) :size(ml.size) {
+        moves = new Move[128];
+        for (int i = 0; i < 128; i++) {
+            moves[i] = ml.moves[i];
+        }
+    }
+
     bool add(const Move &move);
 
     bool clear();
@@ -20,7 +27,7 @@ public:
 
     bool in(Move & move) const;
 
-    const Move &operator[](unsigned int index) const
+     Move &operator[]( int index) const
     {
         if(index > size + 1)
         {

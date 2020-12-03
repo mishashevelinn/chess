@@ -7,11 +7,11 @@
 
 using namespace std;
 
-MoveList::MoveList() : size(0), moves(new Move[64]) {};
+MoveList::MoveList() : size(0), moves(new Move[128]) {};
 
 bool MoveList::add(const Move &move) {
-    if (size > 64) {
-        cerr << __FILE__ << " moves[] Segmentation Fault in line: __LINE__" << endl;
+    if (size > 128) {
+        cerr << __FILE__ << " moves[] Segmentation Fault in line: __LINE__" << endl; //self security measure
         return false;
     }
     moves[size] = move;
@@ -20,9 +20,9 @@ bool MoveList::add(const Move &move) {
 }
 
 bool MoveList::clear() {
-    for (int i = 0; i < size; i++) //this is for inner order.
+    for (int i = 0; i < size; i++)
     {
-        moves[i] = Move();
+        moves[i] = Move();//this is for inner order, avoiding storing garbage and easier debugging
     }
     size = 0;   //limiting traversal ability;
 }

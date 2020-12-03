@@ -33,6 +33,16 @@ class Board {
 public:
     Board();
 
+    Board(const Board & b):WhiteMoves(b.WhiteMoves), BlackMoves(b.BlackMoves), mate_to_white(b.mate_to_white),
+    mate_to_black(b.mate_to_black), stalemate(b.stalemate), ins_material(b.ins_material), white_turn(b.white_turn),
+    promotion(b.promotion), white_king_checked(b.white_king_checked) {
+        board = new Square[120];
+        for (int i = 0; i < 120; i++) {
+            board[i] = b.board[i];
+        }
+
+    }
+
 
     void init();
 
@@ -52,7 +62,7 @@ public:
 
     friend std::ostream& operator <<(std::ostream &os, const Board &rhs);
 
-    void set_square(int position, Piece &new_owner) const;
+    void set_square(int position, const Piece & new_owner) ;
 
     bool mate_to_white;
     bool mate_to_black;
@@ -61,11 +71,9 @@ public:
     bool white_turn;
     bool promotion;             //Flag to handle pawn's promotion
 
-    bool is_ckecked(const Square & s) const;
+    bool is_checked(int i) const;
 
-
-
-
+    bool mat_check() ;
 
 private:
 
@@ -78,6 +86,22 @@ private:
 
 
     bool peek_move(Move &m);
+
+    bool is_white_king_checked() const ;
+
+    bool is_black_king_checked() const ;
+
+    void en_passant(Move &move);
+
+    void castling(Move &move) ;
+
+    void mat();
+
+
+
+    void roll_back();
+
+    void roll_back(const Move &m);
 };
 
 

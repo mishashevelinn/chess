@@ -18,6 +18,7 @@ class Square {
 public:
     Square();
 
+
     int row() const {return (id/10) - 1;} // returns 1 - 8
     int col() const {return (id%10);}
 
@@ -33,6 +34,8 @@ public:
     explicit operator int() const { return id; } //conversion to integer
 
     Square(int id): owner(IV), id(id)  {};
+
+
 
     Square(const Piece &owner, int id);
 

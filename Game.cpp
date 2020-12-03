@@ -14,8 +14,14 @@ void Game::game_loop() {
 
     string str_move;
     while (true) {
-        if (board->ins_material || board->mate_to_black || board->mate_to_white || board->stalemate)
+        Board copy(*this->board);
+        cout << copy;
+        if (board->ins_material || board->mate_to_black || board->mate_to_white || board->stalemate) {
+            if (board->mate_to_black) cout << "Mate to Black!" << endl;
+            if (board->mate_to_white) cout << "Mate to White!" << endl;
             return;
+        }
+
         cout << num_turn << ") ";
         board->white_turn ? cout << "White's turn, please enter a move: \n" : cout
                 << "Black's turn, please enter a move: \n";
@@ -100,14 +106,15 @@ int Game::str_to_move(const string &str, Move &move) const {
         case 7: {
             int column_number_origin = (((int) str[0] - 56) % 9) + 1;
             int row_number_origin = (((int) str[1] - 28) % 10 + 1) * 10; //TODO Find a better formula XD
-            move.setDest(row_number_origin + column_number_origin);
+            move.setSource(row_number_origin + column_number_origin);
 
             int column_number_target = (((int) str[3] - 56) % 9) + 1;
             int row_number_target = (((int) str[4] - 28) % 10 + 1) * 10;
             move.setDest(column_number_target + row_number_target);
 
             move.promoted = true;
-            move.setPromoted(str_to_name(str[6]));
+            Piece piece(str_to_name(str[6]));
+            move.setPromoted(piece);
 
 
         }

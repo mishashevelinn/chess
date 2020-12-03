@@ -8,18 +8,22 @@
 
 
 #include <ostream>
+#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include "Square.h"
 
 class Move {
 public:
     Move();
     Move(int i, int j, const Piece &p=Piece(),bool promoted=false, const Piece & promoted_piece=Piece(), bool en_passant=false);
+    Move( const Move& m):source(m.source), dest(m.dest), piece(m.piece), promoted_piece(m.promoted_piece) {}
 
 
     int getSource() const { return source; }
     int getDest() const { return dest; }
     const Piece & getPromoted() const { return promoted_piece; }
-    void setPromoted(int name) { promoted_piece.setName(name);}
+    void setPromoted(const Piece & piece) { promoted_piece.setName(piece.getName());}
 
 
     void setSource(int i) {source = i;}
@@ -33,11 +37,14 @@ public:
                   << " --> " << square_to;
     }
 
+    bool isRightCastlig() const {return (dest - source) == 2;}
+    bool isLeftCastlig() const {return (dest - source) == -2;}
+
     bool operator==(const Move &rhs) const;
 
     bool operator!=(const Move &rhs) const;;
 
-    void operator=(const Move & rhs){
+    Move & operator=(const Move & rhs){
         source = rhs.source;
         dest = rhs.dest;
         piece = rhs.piece;
