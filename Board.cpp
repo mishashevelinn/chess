@@ -107,7 +107,7 @@ bool Board::peek_move(Move &m) {
                         if (is_checked(get_square(i).getId()))
                             return false;
                     }
-                    castling(m);
+                    do_castling(m);
                     return true;
 
                 }
@@ -117,7 +117,7 @@ bool Board::peek_move(Move &m) {
                         if (is_checked(get_square(i).getId()))
                             return false;
                     }
-                    castling(m);
+                    do_castling(m);
                     return true;
 
                 }
@@ -131,7 +131,7 @@ bool Board::peek_move(Move &m) {
                     if (is_checked(get_square(i).getId()))
                         return false;
                 }
-                castling(m);
+                do_castling(m);
                 return true;
 
             }
@@ -142,7 +142,7 @@ bool Board::peek_move(Move &m) {
                     if (is_checked(get_square(i).getId()))
                         return false;
                 }
-                castling(m);
+                do_castling(m);
                 return true;
 
             }
@@ -734,7 +734,7 @@ void Board::en_passant(Move &move) {
     }
 }
 
-void Board::castling(Move &move) {
+void Board::do_castling(Move &move) {
     switch (get_square(move.getSource()).getOwner().getName()) {
 
         case WK : {
@@ -782,7 +782,7 @@ void Board::castling(Move &move) {
             }
             break;
         default:
-            cerr << "in function castling passed piece is not a king" << endl;
+            cerr << "in function do_castling passed piece is not a king" << endl;
             return;
     }
 }
@@ -827,3 +827,7 @@ bool Board::mat_check() {
     }
 }
 
+bool Board::canCastle(Move &m)
+{
+
+}

@@ -93,7 +93,7 @@ private:
 
     void en_passant(Move &move);
 
-    void castling(Move &move) ;
+    void do_castling(Move &move) ;
 
     void mat();
 
@@ -104,6 +104,8 @@ private:
     void roll_back(const Move &m);
 
     void pat_check();
+
+    bool canCastle( Move &m);
 };
 
 
