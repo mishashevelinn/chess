@@ -17,8 +17,8 @@ enum // Squares
     A4 = 51, B4, C4, D4, E4, F4, G4, H4,
     A3 = 41, B3, C3, D3, E3, F3, G3, H3,
     A2 = 31, B2, C2, D2, E2, F2, G2, H2,
-    A1 = 21, B1, C1, D1, E1, F1, G1, H1,
-}squares;
+    A1 = 21, B1, C1, D1, E1, F1, G1, H1
+};
 
 
 enum // Directions
@@ -50,6 +50,7 @@ public:
     MoveList WhiteMoves;
     MoveList BlackMoves;
 
+
     bool make_move(Move &m);
 
     Square const &get_square(int position) const;
@@ -74,6 +75,8 @@ public:
     bool is_checked(int i) const;
 
     bool mat_check() ;
+
+
 
 private:
 
@@ -108,6 +111,10 @@ private:
     bool canCastle( Move &m);
 
     Move lastMove;
+
+    void ins_material_check();
+    int WhitePieces[7];
+    int BlackPieces[7];
 };
 
 

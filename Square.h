@@ -4,7 +4,7 @@
 
 #ifndef CHESS_SQUARE_H
 #define CHESS_SQUARE_H
-
+#include <ostream>
 #include "Piece.h"
 #include <string>
 
@@ -31,7 +31,7 @@ public:
         return os << c << r;
     }
 
-    explicit operator int() const { return id; } //conversion to integer
+//    explicit operator int() const { return id; } //conversion to integer
 
     Square(int id): owner(IV), id(id)  {};
 

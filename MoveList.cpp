@@ -25,6 +25,7 @@ bool MoveList::clear() {
         moves[i] = Move();//this is for inner order, avoiding storing garbage and easier debugging
     }
     size = 0;   //limiting traversal ability;
+return true;
 }
 
 bool MoveList::in(Move &move) const {

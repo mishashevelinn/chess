@@ -31,7 +31,7 @@ public:
     {
         if(index > size + 1)
         {
-            cout << "RANGE ERROR";
+            cerr << "RANGE ERROR";
             throw exception();
         }
 

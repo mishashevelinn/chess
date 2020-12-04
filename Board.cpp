@@ -15,7 +15,10 @@ Piece empty = Piece(EM);
 
 
 Board::Board() : board(new Square[120]), white_turn(true), lastMove(Move()) {
-
+    for (int i = 0; i < 7; i++) {
+        WhitePieces[i] = 0;
+        BlackPieces[i] = 0;
+    }
 }
 
 std::ostream &operator<<(std::ostream &os, const Board &rhs) {
@@ -27,7 +30,8 @@ std::ostream &operator<<(std::ostream &os, const Board &rhs) {
             int number = (row + 1) * 10 + col;
             int piece_name = rhs.get_square(number).getOwner().getName();   //*using advantage of enumeration
             if (piece_name != IV) {                                         //of pieces names
-                os << pieces[piece_name + 6] << " ";
+                if(col != 8) os << pieces[piece_name + 6] << " ";
+                else os << pieces[piece_name + 6];
             }
         }
         os << std::endl;
@@ -35,9 +39,6 @@ std::ostream &operator<<(std::ostream &os, const Board &rhs) {
     os << "  A B C D E F G H" << std::endl;
 
 
-    if (rhs.white_king_checked && rhs.white_turn) {
-        os << "White king checked" << std::endl;
-    }
     //if black king checked
     return os;
 }
@@ -75,7 +76,7 @@ bool Board::peek_move(Move &m) {
     find_legal_moves(m);
 
     if (!isValidMove(m)) {
-        cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
+       // cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
 
         return false;
     }
@@ -102,10 +103,10 @@ bool Board::peek_move(Move &m) {
 
     //Pawn's promotion
     if (m.promoted) {
-        cout<< "doing promotion" << endl;
-        cout << "Promoted piece is: " << m.getPromoted() << endl;
+        //cout<< "doing promotion" << endl;
+        //cout << "Promoted piece is: " << m.getPromoted() << endl;
         if(m.getPromoted().getName() == EM){
-            cout << "INVALID INPUT TO MAKE MOVE, PROMOTED PIECE IS MISSING" << endl;
+          //  cout << "INVALID INPUT TO MAKE MOVE, PROMOTED PIECE IS MISSING" << endl;
             //TODO RETURN FALSE;
         }
         moved_piece.setName(m.getPromoted().getName());
@@ -133,6 +134,7 @@ bool Board::make_move(Move &m) {
 
     white_turn = !white_turn;
     mat_check();
+    ins_material_check();
     lastMove = m;
 
     return true;
@@ -471,7 +473,7 @@ void Board::find_legal_moves(Move &m) {
                             get_square(i + 1).getOwner().getName() == WP &&
                             get_square(i + 1).getOwner().get_counter() == 1) {
                             Move move(i, j, piece, false, Piece(), true);
-                            cout << move << endl;
+                          //  cout << move << endl;
                             BlackMoves.add(move);
                         }
                     }
@@ -506,7 +508,7 @@ void Board::find_legal_moves(Move &m) {
                             get_square(i - 1).getOwner().get_counter() == 1) {
                             Move move(i, j, piece, false, Piece(), true);
                             BlackMoves.add(move);
-                            cout << move << endl;
+                          //  cout << move << endl;
                         }
                     }
                     break;
@@ -765,7 +767,6 @@ bool Board::mat_check() {
     int w_counter = 0;
     int b_counter = 0;
     if (white_turn) {
-        Move m(-1, -1);
         find_legal_moves(m);
         for (int i = 0; i < WhiteMoves.get_size(); i++) {
             Board b = Board(*this);
@@ -796,6 +797,7 @@ bool Board::mat_check() {
         if (b_counter == 0 && is_black_king_checked()) mate_to_black = true;
         if(b_counter == 0 && !is_black_king_checked()) stalemate = true;
     }
+    return false;
 }
 
 bool Board::canCastle(Move &m)
@@ -853,4 +855,78 @@ bool Board::canCastle(Move &m)
             }
         }
     }
+    return false;
+}
+void Board::ins_material_check(){
+    for (int i = 0; i < 7; i++) {
+        WhitePieces[i] = 0;
+        BlackPieces[i] = 0;
+    }
+    int whitePiecesDead = 0;
+    int blackPiecesDead = 0;
+    for (int i = 1; i <= 7; i++) {
+        for (int j = A1; j <=H8 ; j++) {
+            int name = get_square(j).getOwner().getName();
+            if(name > 0 && name != IV)
+            {
+                if(name == i)
+                WhitePieces[name]++;
+            }
+            if( name < 0 ) //IV > 0
+            {
+                if(name*(-1) == i)
+                BlackPieces[name*(-1)]++;
+
+            }
+        }
+    }
+
+    for (int i = WP; i <= WQ; i++) {
+        if (WhitePieces[i] == 0) {
+            whitePiecesDead++;
+        }
+    }
+        if(whitePiecesDead == 5)
+        {
+            ins_material = true;
+        }
+        if(whitePiecesDead == 4 && WhitePieces[WB] == 1)
+        {
+            ins_material = true;
+        }
+        if(whitePiecesDead == 4 && WhitePieces[WR] == 1)
+        {
+            ins_material = true;
+        }
+
+
+        for (int i = BP*(-1); i <= BQ*(-1); i++) {
+            if (BlackPieces[i] == 0) {
+                blackPiecesDead++;
+            }
+        }
+            if(blackPiecesDead == 5)
+            {
+                ins_material = true;
+            }
+            if(blackPiecesDead == 4 && BlackPieces[BB * (-1)] == 1)
+            {
+                ins_material = true;
+            }
+            if(blackPiecesDead == 4 && BlackPieces[BR * (-1)] == 1)
+            {
+                ins_material = true;
+            }
+
+//    cout << "white pieces: ";
+//    for (int i = 0; i < 7; i++) {
+//        cout << WhitePieces[i] << ' ';
+//    }
+//    cout << endl;
+//    cout << "Black pieces: ";
+//    for (int i = 0; i < 7; i++) {
+//         cout << BlackPieces[i] << ' ';
+//
+//    }
+//    cout << endl;
 }

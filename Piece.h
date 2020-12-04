@@ -1,7 +1,7 @@
 //
 // Created by misha on 24/11/2020.
 //
-
+#include <ostream>
 #ifndef CHESS_PIECE_H
 #define CHESS_PIECE_H
 
@@ -16,16 +16,10 @@
 enum {
     WK = 6, WQ = 5, WR = 4, WB = 3, WN = 2, WP = 1,
     BK = -6, BQ = -5, BR = -4, BB = -3, BN = -2,  BP = -1, EM = 0, IV = 7
-}pieces;
+};
 
-static std::string names = "BKBQBRBBBNBPEMWPWNWBWRWQWKIV";
 
 using namespace std;
-#define ALPHAS "KQbnrpkqBNRP."
-
-
-#define BLACK 0
-#define WHITE 1
 
 
 class Piece {

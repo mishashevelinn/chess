@@ -51,6 +51,7 @@ public:
         promoted_piece = rhs.promoted_piece;
         en_passant = rhs.en_passant;
         promoted = rhs.promoted;
+        return *this;
     }
 
     bool promoted;

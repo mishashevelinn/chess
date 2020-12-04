@@ -14,12 +14,11 @@ void Game::game_loop() {
 
     string str_move;
     while (true) {
-        Board copy(*this->board);
-        cout << copy;
         if (board->ins_material || board->mate_to_black || board->mate_to_white || board->stalemate) {
-            if (board->mate_to_black) cout << "Mate to Black!" << endl;
-            if (board->mate_to_white) cout << "Mate to White!" << endl;
-            if(board->stalemate) cout << "Stalemate!" << endl;
+            if (board->mate_to_black) cout << "White wins with checkmate!" << endl;
+            if (board->mate_to_white) cout << "Black wins with checkmate!" << endl;
+            if(board->stalemate) cout << "The game is drawn due to stalemate!" << endl;
+            if(board->ins_material) cout << "The game is drawn due to insufficient material!" << endl;
             return;
         }
 
@@ -33,7 +32,7 @@ void Game::game_loop() {
             str_to_move(str_move, move);
             if (!board->make_move(move))
             {
-                cerr << num_turn << "Illegal move; please enter a move:" << endl;
+                cerr << num_turn << ") " << "Illegal move; please enter a move:" << endl;
                 goto err;
             }
             else {
@@ -118,9 +117,10 @@ int Game::str_to_move(const string &str, Move &move) const {
         }
             break;
         default:
-            cerr << "Length Err" << __FILE__ << __LINE__ << endl;
+            //cerr << "Length Err" << __FILE__ << __LINE__ << endl;
             return -99;
     }
+    return -99;
 }
 
 bool Game::str_square_check(const string &str_square) const {
@@ -154,7 +154,7 @@ int Game::str_to_name(const char &str_name) const{
         case 'N' :
             return BN;
         default:
-            cerr<<"ERROR WHILE ANALYZING PROMOTION CANDIDATE"<< __FILE__<<__LINE__<<endl; //TODO erase whenever after
+            //cerr<<"ERROR WHILE ANALYZING PROMOTION CANDIDATE"<< __FILE__<<__LINE__<<endl; //TODO erase whenever after
             return 0;
     }
 
