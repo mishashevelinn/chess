@@ -42,7 +42,7 @@ public:
 
     bool operator==(const Move &rhs) const;
 
-    bool operator!=(const Move &rhs) const;;
+    bool operator!=(const Move &rhs) const;
 
     Move & operator=(const Move & rhs){
         source = rhs.source;
