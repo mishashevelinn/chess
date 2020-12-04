@@ -6,11 +6,13 @@
 #define CHESS_PIECE_H
 
 /* Functionality:
- *      Legal moves calculation and keeping it in a class member
- *      Color of piece
- *      Name of piece
- *      Special class member to handle some special pieces properties
- *      Contains enums and definitions related to a piece
+ *      Holding and providing name, color, and number of move since game start, made by specific piece
+ * Explanation:
+ *      Name is an integer. If a name less then zero - a piece is black. equals zero if it represents
+ *      an empty piece and black otherwise. names are coded by following enumeration for easier code writing.
+ *      IV for invalid piece, placed at spare squares, surrounding the Board.
+ *
+ *      Move counter updates elsewhere if a piece has moved. It is used to analyze special cases like Castling
  */
 
 enum {
@@ -24,9 +26,9 @@ using namespace std;
 
 class Piece {
 public:
-    Piece(): name(EM), move_counter(0) {};
+    Piece(): name(EM), position(-1), first_move(true), move_counter(0) {};
 
-    Piece(int name) : name(name), move_counter(0){}
+    Piece(int name) : name(name), position(-1), first_move(true), move_counter(0) {}
 
 
     int getName() const { return name; }
@@ -44,11 +46,15 @@ public:
     bool get_first_move() const { return first_move; }
 
     void move_counter_increase() { move_counter++;}
+
     int get_counter() const  { return  move_counter; }
+
     void set_counter(int i) { move_counter = i;}
 
 
-
+/*Operator is not necessary for the assignment and was written for
+ * practicing operator overloading and widely used in debugging.
+ **/
     friend std::ostream &operator<<(std::ostream &os, Piece const &p) {
         switch (p.getName()) {
             case WP:
@@ -109,12 +115,7 @@ public:
 
     bool operator!=(const Piece &rhs) const;
 
-    void operator=(const Piece & rhs){
-        name = rhs.name;
-        position = rhs.position;
-        first_move = rhs.first_move;
-        move_counter = rhs.move_counter;
-    }
+    void operator=(const Piece & rhs);
 
 
 };

@@ -4,8 +4,6 @@
 
 
 
-#include <cstdio>
-#include <cstdlib>
 #include "Board.h"
 #include <iostream>
 
@@ -13,8 +11,14 @@ using namespace std;
 
 Piece empty = Piece(EM);
 
-
-Board::Board() : board(new Square[120]), white_turn(true), lastMove(Move()) {
+static int WhitePiecesInit[7] = {0};
+static int BlackPiecesInit[7] = {0};
+Board::Board() : board(new Square[120]),
+                mate_to_white(false), mate_to_black(false), stalemate(false),
+                ins_material(false), white_turn(true), promotion(false), white_king_checked(false),
+                 lastMove(Move()){
+    WhitePieces = WhitePiecesInit;
+    BlackPieces = BlackPiecesInit;
     for (int i = 0; i < 7; i++) {
         WhitePieces[i] = 0;
         BlackPieces[i] = 0;
@@ -73,7 +77,7 @@ void Board::init() {
 }
 
 bool Board::peek_move(Move &m) {
-    find_legal_moves(m);
+    find_legal_moves();
 
     if (!isValidMove(m)) {
        // cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
@@ -82,7 +86,7 @@ bool Board::peek_move(Move &m) {
     }
     Piece moved_piece = board[m.getSource()].getOwner();
 
-/*************************En*Passant******************************/
+/************************* En Passant ******************************/
     if (m.en_passant) {
         if (white_turn) {
             Move template_move = Move(m.getDest() + 10, m.getDest() - 10);
@@ -124,7 +128,7 @@ bool Board::make_move(Move &m) {
 
     if (!peek_move(m)) { return false; }
 
-    find_legal_moves(m); //TODO do i need this?
+    find_legal_moves(); //TODO do i need this?
 
     /*roll back move if it leads to current player's check*/
     if(white_turn && is_white_king_checked()) { *this = backup; return false;}
@@ -167,7 +171,7 @@ Square const &Board::get_square(int position) const {
     return board[position];
 }
 
-void Board::find_legal_moves(Move &m) {
+void Board::find_legal_moves() {
     WhiteMoves.clear(); //clear all moves lists each time before starting counting
     BlackMoves.clear();
 
@@ -763,17 +767,17 @@ void Board::do_castling(Move &move) {
 
 bool Board::mat_check() {
     Move m(-1, -1);
-    find_legal_moves(m);
+    find_legal_moves();
     int w_counter = 0;
     int b_counter = 0;
     if (white_turn) {
-        find_legal_moves(m);
+        find_legal_moves();
         for (int i = 0; i < WhiteMoves.get_size(); i++) {
             Board b = Board(*this);
 
             if (!WhiteMoves[i].isRightCastlig() && !WhiteMoves[i].isLeftCastlig()) {
                 if (b.peek_move(b.WhiteMoves[i])) {
-                    b.find_legal_moves(m);
+                    b.find_legal_moves();
                     if (!b.is_white_king_checked()) {
                         w_counter+=1;
                                             }
@@ -785,11 +789,11 @@ bool Board::mat_check() {
 
     } else {
         Move m(-1, -1);
-        find_legal_moves(m);
+        find_legal_moves();
         for (int i = 0; i < BlackMoves.get_size(); i++) {
             Board b = Board(*this);
             if (b.peek_move(BlackMoves[i])) {
-                b.find_legal_moves(m);
+                b.find_legal_moves();
                 if(!b.is_black_king_checked())
                     b_counter++;
             }
@@ -881,52 +885,26 @@ void Board::ins_material_check(){
         }
     }
 
-    for (int i = WP; i <= WQ; i++) {
+    for (int i = 1; i <= 5; i++) {
         if (WhitePieces[i] == 0) {
             whitePiecesDead++;
         }
+        if(BlackPieces[i] == 0)
+        {
+            blackPiecesDead++;
+        }
     }
-        if(whitePiecesDead == 5)
+        if(whitePiecesDead == 5 && blackPiecesDead == 5)
         {
             ins_material = true;
         }
-        if(whitePiecesDead == 4 && WhitePieces[WB] == 1)
+        if(whitePiecesDead == 4 && blackPiecesDead == 4 && WhitePieces[WB] == 1 && BlackPieces[WB] == 1)
         {
             ins_material = true;
         }
-        if(whitePiecesDead == 4 && WhitePieces[WR] == 1)
+        if(whitePiecesDead == 4 && blackPiecesDead == 4 && WhitePieces[WN] == 1 && BlackPieces[WN] == 1)
         {
             ins_material = true;
         }
 
-
-        for (int i = BP*(-1); i <= BQ*(-1); i++) {
-            if (BlackPieces[i] == 0) {
-                blackPiecesDead++;
-            }
-        }
-            if(blackPiecesDead == 5)
-            {
-                ins_material = true;
-            }
-            if(blackPiecesDead == 4 && BlackPieces[BB * (-1)] == 1)
-            {
-                ins_material = true;
-            }
-            if(blackPiecesDead == 4 && BlackPieces[BR * (-1)] == 1)
-            {
-                ins_material = true;
-            }
-
-//    cout << "white pieces: ";
-//    for (int i = 0; i < 7; i++) {
-//        cout << WhitePieces[i] << ' ';
-//    }
-//    cout << endl;
-//    cout << "Black pieces: ";
-//    for (int i = 0; i < 7; i++) {
-//         cout << BlackPieces[i] << ' ';
-//
-//    }
-//    cout << endl;
 }

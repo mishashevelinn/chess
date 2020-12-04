@@ -54,15 +54,18 @@ public:
         return *this;
     }
 
+
+    int source;
+    int dest;
+    Piece piece;
     bool promoted;
+    Piece promoted_piece;
+
 
 
     bool en_passant;
 private:
-    int source;
-    int dest;
-    Piece piece;
-    Piece promoted_piece;
+
 
 
 };

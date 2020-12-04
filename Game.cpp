@@ -23,8 +23,9 @@ void Game::game_loop() {
         }
 
         cout << num_turn << ") ";
-        board->white_turn ? cout << "White's turn, please enter a move: \n" : cout
-                << "Black's turn, please enter a move: \n";
+        board->white_turn ? cout << "White's turn, please enter a move:" : cout
+                << "Black's turn, please enter a move:";
+        cout << endl;
         err: getline(cin, str_move);
         if (!cin) { return; }
         if (valid_option(str_move)) {
@@ -41,7 +42,7 @@ void Game::game_loop() {
                 continue;
             }
         } else {
-            cerr << num_turn << ") " << "Invalid input; please enter a move:" << endl;
+            cerr << num_turn << ") " << "Invalid input; please enter a move: ";
             goto err;
         }
     }
@@ -117,7 +118,6 @@ int Game::str_to_move(const string &str, Move &move) const {
         }
             break;
         default:
-            //cerr << "Length Err" << __FILE__ << __LINE__ << endl;
             return -99;
     }
     return -99;

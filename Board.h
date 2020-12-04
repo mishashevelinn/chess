@@ -1,6 +1,7 @@
-//
 // Created by misha on 24/11/2020.
-//
+
+
+
 
 #ifndef CHESS_BOARD_H
 #define CHESS_BOARD_H
@@ -29,13 +30,14 @@ enum // Directions
     SSW = -19, SSE = -21, SWW = -8, SEE = -12
 };
 
+
 class Board {
 public:
     Board();
 
     Board(const Board & b):WhiteMoves(b.WhiteMoves), BlackMoves(b.BlackMoves), mate_to_white(b.mate_to_white),
     mate_to_black(b.mate_to_black), stalemate(b.stalemate), ins_material(b.ins_material), white_turn(b.white_turn),
-    promotion(b.promotion), white_king_checked(b.white_king_checked) {
+    promotion(b.promotion), white_king_checked(b.white_king_checked), WhitePieces(b.WhitePieces), BlackPieces(b.BlackPieces) {
         board = new Square[120];
         for (int i = 0; i < 120; i++) {
             board[i] = b.board[i];
@@ -44,11 +46,24 @@ public:
     }
 
 
+
     void init();
 
     Square *board;
     MoveList WhiteMoves;
     MoveList BlackMoves;
+    bool mate_to_white;
+    bool mate_to_black;
+    bool stalemate;
+    bool ins_material;
+    bool white_turn;
+    bool promotion;
+    bool white_king_checked;
+    Move lastMove;
+    int *WhitePieces;
+    int *BlackPieces;
+
+
 
 
     bool make_move(Move &m);
@@ -57,20 +72,15 @@ public:
 
     const Square &operator[](int position) const { return board[position]; }
 
-    void find_legal_moves(Move &m);
+    void find_legal_moves();
 
-    void test();
+
 
     friend std::ostream& operator <<(std::ostream &os, const Board &rhs);
 
     void set_square(int position, const Piece & new_owner) ;
 
-    bool mate_to_white;
-    bool mate_to_black;
-    bool stalemate;
-    bool ins_material;
-    bool white_turn;
-    bool promotion;             //Flag to handle pawn's promotion
+                 //Flag to handle pawn's promotion
 
     bool is_checked(int i) const;
 
@@ -81,11 +91,11 @@ public:
 private:
 
 
-    bool white_king_checked;
+
 
     bool isValidMove(Move &m) const;
 
-    void init_players();
+
 
 
     bool peek_move(Move &m);
@@ -98,23 +108,20 @@ private:
 
     void do_castling(Move &move) ;
 
-    void mat();
 
 
 
-    void roll_back();
 
-    void roll_back(const Move &m);
 
-    void pat_check();
+
+
 
     bool canCastle( Move &m);
 
-    Move lastMove;
+
 
     void ins_material_check();
-    int WhitePieces[7];
-    int BlackPieces[7];
+
 };
 
 

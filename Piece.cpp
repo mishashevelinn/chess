@@ -49,3 +49,11 @@ bool Piece::operator!=(const Piece &rhs) const {
     return !(rhs == *this);
 }
 
+
+
+void Piece::operator=(const Piece &rhs) {
+    name = rhs.name;
+    position = rhs.position;
+    first_move = rhs.first_move;
+    move_counter = rhs.move_counter;
+}

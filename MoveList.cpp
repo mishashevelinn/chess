@@ -7,7 +7,7 @@
 
 using namespace std;
 
-MoveList::MoveList() : size(0), moves(new Move[128]) {};
+MoveList::MoveList() : moves(new Move[128]), size(0) {}
 
 bool MoveList::add(const Move &move) {
     if (size > 128) {

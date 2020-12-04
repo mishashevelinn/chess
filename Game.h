@@ -32,7 +32,6 @@ public:
 private:
     Game(const Game &) {} //Only one game played at a time
 
-    string curr_move;
     int num_turn; //counting moves for display 1) , 2) ...
 
 
