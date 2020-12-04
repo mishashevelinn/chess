@@ -152,9 +152,9 @@ bool Board::isValidMove(Move &m) const {
     if (white_turn && WhiteMoves.in(m)) {
         return true;
     }
-    if(white_turn && !WhiteMoves.in(m)) cout << "white move match err" << endl;
+    //if(white_turn && !WhiteMoves.in(m)) cout << "white move match err" << endl;
     if (!white_turn && BlackMoves.in(m)) return true;
-    if (!white_turn && !BlackMoves.in(m)) cout << "black move match err" << endl;
+    //if (!white_turn && !BlackMoves.in(m)) cout << "black move match err" << endl;
     return false;
 }
 
