@@ -19,6 +19,7 @@ void Game::game_loop() {
         if (board->ins_material || board->mate_to_black || board->mate_to_white || board->stalemate) {
             if (board->mate_to_black) cout << "Mate to Black!" << endl;
             if (board->mate_to_white) cout << "Mate to White!" << endl;
+            if(board->stalemate) cout << "Stalemate!" << endl;
             return;
         }
 
@@ -57,13 +58,12 @@ bool Game::valid_option(string str) {
         return false;
 
     word_counter = 0;
-    s.str("");
-    s << str;
+    stringstream ss(str);
 
-    while (s >> temp) {
+    while (ss >> temp) {
         word_counter++;
         if (word_counter == 3) { //promotion
-            if (!board->promotion) { return false; }
+            cout << temp.length();
             if (temp.length() != 1) { return false; }
             char c = temp[0];
             if (board->white_turn) { //checking promotion format
@@ -84,9 +84,9 @@ bool Game::valid_option(string str) {
             return true;
         }
 
-
+        if (!str_square_check(temp)) { return false; }
     }
-    if (!str_square_check(temp)) { return false; }
+
 
     return true;
 }
@@ -102,7 +102,6 @@ int Game::str_to_move(const string &str, Move &move) const {
             int row_number_target = (((int) str[4] - 28) % 10 + 1) * 10;
             move.setDest(column_number_target + row_number_target);
         }
-
             break;
         case 7: {
             int column_number_origin = (((int) str[0] - 56) % 9) + 1;
@@ -116,8 +115,6 @@ int Game::str_to_move(const string &str, Move &move) const {
             move.promoted = true;
             Piece piece(str_to_name(str[6]));
             move.setPromoted(piece);
-
-
         }
             break;
         default:
@@ -130,8 +127,8 @@ bool Game::str_square_check(const string &str_square) const {
     if (str_square.length() != 2) { return false; }
     if ((int)str_square[0] < 65 ||   //Capital letters A - H
         (int)str_square[0] > 72 ||
-        (int) str_square[1] < 49 ||  //Numbers 1 - 8
-        (int) str_square[1] > 56)
+        (int)str_square[1] < 49 ||  //Numbers 1 - 8
+        (int)str_square[1] > 56)
         return false;
     return true;
 
@@ -158,7 +155,7 @@ int Game::str_to_name(const char &str_name) const{
             return BN;
         default:
             cerr<<"ERROR WHILE ANALYZING PROMOTION CANDIDATE"<< __FILE__<<__LINE__<<endl; //TODO erase whenever after
-
+            return 0;
     }
-    return 0;
+
 }

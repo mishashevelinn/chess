@@ -17,7 +17,7 @@ class Move {
 public:
     Move();
     Move(int i, int j, const Piece &p=Piece(),bool promoted=false, const Piece & promoted_piece=Piece(), bool en_passant=false);
-    Move( const Move& m):source(m.source), dest(m.dest), piece(m.piece), promoted_piece(m.promoted_piece) {}
+    Move( const Move& m):source(m.source), dest(m.dest), piece(m.piece), promoted(m.promoted), promoted_piece(m.promoted_piece), en_passant(m.en_passant) {}
 
 
     int getSource() const { return source; }
@@ -50,6 +50,7 @@ public:
         piece = rhs.piece;
         promoted_piece = rhs.promoted_piece;
         en_passant = rhs.en_passant;
+        promoted = rhs.promoted;
     }
 
     bool promoted;

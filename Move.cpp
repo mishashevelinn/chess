@@ -16,8 +16,9 @@ Move::Move() : source(-1), dest(-1), piece(EM), promoted(false) {
 
 bool Move::operator==(const Move &rhs) const {
     return source == rhs.source &&
-           dest == rhs.dest;
-           //piece == rhs.piece;
+           dest == rhs.dest&&
+           promoted_piece == rhs.promoted_piece;
+
 }
 
 bool Move::operator!=(const Move &rhs) const {
