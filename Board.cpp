@@ -109,70 +109,75 @@ void Board::init() {
             IV, IV, IV, IV, IV, IV, IV, IV, IV, IV,
             IV, IV, IV, IV, IV, IV, IV, IV, IV, IV};
 
-
+/*An array of squares initialized according to default constructor of Square,
+ * Which provides an empty piece as owner of square.
+ * */
     for (int i = 0; i < 120; ++i) {
-        if (initial[i] != IV) {
-            Piece piece(initial[i]);
-            set_square(i, piece);
-        } else {
-            Piece inv_piece(IV);
-            set_square(i, inv_piece);
-        }
+        Piece piece(initial[i]); //calling a constructor of piece, which gets int (name) as parameter
+        set_square(i, piece); //setting it to be owner of corresponding square by calling set_square
     }
 }
 
+/*Method which makes a pseudo-legal move.
+ * Pseudo Legal Move we call a move, which is possible if check to current player is ignored.
+ * Finds all pseudo-legal moves by calling find_legal_moves
+ * Checks if an argument Move &m is valid - right color, non-empty origin square and
+ * whether a move exists in a list of possible moves - WhiteMoves/BlackMoves.
+ * Handles special moves: en passant, castling and promotion*/
 bool Board::peek_move(Move &m) {
     find_legal_moves();
+    if (!isValidMove(m)) return false;
 
-    if (!isValidMove(m)) {
-        // cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
-
-        return false;
-    }
-    Piece moved_piece = board[m.getSource()].getOwner();
+    Piece moved_piece = board[m.getSource()].getOwner(); //getting a current moved piece in a variable
 
 /************************ *En Passant* *****************************/
     if (m.en_passant) {
         if (white_turn) {
-            Move template_move = Move(m.getDest() + 10, m.getDest() - 10);
+            Move template_move = Move(m.getDest() + 10, m.getDest() - 10);  //expected last move of opponent
             if (template_move != lastMove) return false;
-            set_square(m.getDest() - 10, empty);
+            set_square(m.getDest() - 10, empty);                //making en passant
         } else {
-            Move template_move = Move(m.getDest() - 10, m.getDest() + 10);
+            Move template_move = Move(m.getDest() - 10, m.getDest() + 10); //the calculations are symmetric
             if (template_move != lastMove) return false;
             set_square(m.getDest() + 10, empty);
         }
     }
 /********************** *Castling* *********************************/
-    if (m.isLeftCastlig() || m.isRightCastlig()) {
-        if (!canCastle(m)) return false;
-        do_castling(m);
+    if (m.isLeftCastlig() || m.isRightCastlig()) { //a move stores an information whether it is castling or not:
+        if (!canCastle(m)) return false;        //if it is, check whether calsting conditions hold.
+        do_castling(m);                         //also folding a complex castling exchange into separate funciton
     }
 
 
 /********************** *Promotion* *********************************/
-    if (m.promoted && m.getPromoted().getName() != EM) {
-        moved_piece.setName(m.getPromoted().getName());
-    }
+    if (m.promoted && m.getPromoted().getName() != EM) { //using a move info to determine whether a move is promotion
+        moved_piece.setName(m.getPromoted().getName()); //just setting a moved piece's name to be a promoted piece's name
+    }                                                   //according to input
 
 
 /********************** *Do Pseudo-Legal Move **********************************/
-    moved_piece.move_counter_increase();
-    set_square(m.getDest(), moved_piece);
+                                                        //Finally:
+    moved_piece.move_counter_increase();                //if a move is regular or promoted, setting a destanation
+    set_square(m.getDest(), moved_piece);            //square's owner to moved piece and origin square - empty.
     set_square(m.getSource(), empty);
     return true;
 }
 
-
+/*This method creates a copy of board in current state and checks wheter
+ * a pseudo-legal move that done in peek_move method, sets current player's King to check.
+ * If it is, a move can't be done and a function returns false to a Game class caller.
+ * In this case, a roll back performed by assigning current object to be a previously made copy.
+ * Otherwise, move is approved, a turn passes to other player and checks of Mat and Draw are
+ * performed and updates a last_move data member to be a current move.*/
 bool Board::make_move(Move &m) {
     Board backup = Board(*this);
     Piece moved_piece = board[m.getDest()].getOwner();
 
     if (!peek_move(m)) { return false; }
 
-    find_legal_moves(); //TODO do i need this?
+    find_legal_moves(); //Since peek_move has changed a state of board, looking for legal moves secondly.
 
-    /*roll back move if it leads to current player's check*/
+    /*Roll back move if it leads to current player's check.*/
     if (white_turn && is_white_king_checked()) {
         *this = backup;
         return false;
@@ -193,31 +198,40 @@ bool Board::make_move(Move &m) {
 
 }
 
-/*using array of counters to keep track of dead and alive pieces */
 
-
+/*Checks if player chose an empty square to move it,
+ *Player tries to move opponent's piece
+ *if a move is in list of possible moves of current player
+ * Admit that in() method changes a move.
+ * if it's en passant or castling or promotion, adds a certain flags*/
 bool Board::isValidMove(Move &m) const {
     if (get_square(m.getSource()) == EM) return false;
     if (get_square(m.getSource()).getOwner() < 0 && white_turn) return false;
     if (get_square(m.getSource()).getOwner() > 0 && !white_turn) return false;
-    if (white_turn && WhiteMoves.in(m)) {
-        return true;
-    }
-    //if(white_turn && !WhiteMoves.in(m)) cout << "white move match err" << endl;
+    if (white_turn && WhiteMoves.in(m)) return true; //changes a move
     if (!white_turn && BlackMoves.in(m)) return true;
-    //if (!white_turn && !BlackMoves.in(m)) cout << "black move match err" << endl;
-    return false;
+
+    return false; //indication of program fail
 }
 
+/*A setter, gets index sets new owner. Set owner called by operator=.
+ */
 void Board::set_square(int position, Piece &new_owner) const {
     board[position].owner = new_owner;
     board[position].setID(position);
 }
-
+//A getter
 Square const &Board::get_square(int position) const {
     return board[position];
 }
 
+
+/*Iteration all over the board's pieces and squares.
+ * For each piece, caclulating a possible moves,
+ * Creating a move and storing it in MovesList - a class, containing array of Moves
+ * If a move is special move(en passant, castling, promotion) sets a flag, to inform
+ * a caller - peek_move()
+ * */
 void Board::find_legal_moves() {
     WhiteMoves.clear(); //clear all moves lists each time before starting counting
     BlackMoves.clear();
@@ -291,7 +305,7 @@ void Board::find_legal_moves() {
                         if (get_square(i - 1).isOccupied() &&
                             get_square(i - 1).getOwner().getName() == BP &&
                             get_square(i - 1).getOwner().get_counter() == 1) {
-                            Move move(i, j, piece, false, Piece(), true);
+                            Move move(i, j, piece, false, Piece(), true); //setting En Passant flag - true
                             WhiteMoves.add(move);
                         }
                     }
@@ -299,9 +313,9 @@ void Board::find_legal_moves() {
                     if (get_square(j).isOccupied() && get_square(j).getOwner().getName() < 0) {
                         if (i > 80) //Check for promotion
                         {
-                            Move move(i, j, piece, true, WQ);
-                            WhiteMoves.add(move);
-
+                            Move move(i, j, piece, true, WQ); //setting a promoted piece
+                            WhiteMoves.add(move);             //else it is Empty piece since
+                                                                //default constructor is envoked
                             Move move2(i, j, piece, true, WN);
                             WhiteMoves.add((move2));
 
@@ -692,37 +706,16 @@ void Board::find_legal_moves() {
 
 
 
-
-
-
-
-//enum   {WK = 0, WQ = 1, WB = 2, WKN = 3, WR = 4, WP = 5,
-//    BK = 6, BQ = 7, BB = 8, BKN = 9, BR = 10, BP = 11, EMP = 12};
-//
-//
-
-
-//enum // Squares
-//{
-//    A8 = 0, B8, C8, D8, E8, F8, G8, H8,
-//    A7 = 8, B7, C7, D7, E7, F7, G7, H7,
-//    A6 = 16, B6, C6, D6, E6, F6, G6, H6,
-//    A5 = 24, B5, C5, D5, E5, F5, G5, H5,
-//    A4 = 32, B4, C4, D4, E4, F4, G4, H4,
-//    A3 = 40, B3, C3, D3, E3, F3, G3, H3,
-//    A2 = 48, B2, C2, D2, E2, F2, G2, H2,
-//    A1 = 56, B1, C1, D1, E1, F1, G1, H1,
-//};
-
-
 }
 
+
+/*Finds king, checks if its square is reachable by opponent's piece*/
 bool Board::is_checked(int k) const {
     if (get_square(k).getOwner().getName() < 0 && get_square(k).getOwner().getName() != IV) //black piece is inspected
     {
         for (int i = 0; i < WhiteMoves.size; i++) {
-            if (get_square(k).getId() == WhiteMoves[i].getDest())
-                return true;
+            if (get_square(k).getId() == WhiteMoves[i].getDest()) //can white move get to black king?
+                return true;                                        // [ ] operator is overloaded
         }
     }
     if (get_square(k).getOwner().getName() > 0 && get_square(k).getOwner().getName() != IV) //white piece is inspected
@@ -736,7 +729,7 @@ bool Board::is_checked(int k) const {
 
 }
 
-bool Board::is_white_king_checked() const {
+bool Board::is_white_king_checked() const { //Finds a king and checks whether its square is checked.
     for (int i = A1; i <= H8; i++) {
         if (get_square(i).getOwner().getName() == WK && is_checked(i))
             return true;
@@ -744,7 +737,7 @@ bool Board::is_white_king_checked() const {
     return false;
 }
 
-bool Board::is_black_king_checked() const {
+bool Board::is_black_king_checked() const { //Same as white king.
     for (int i = A1; i <= H8; i++) {
         if (get_square(i).getOwner().getName() == BK && is_checked(i))
             return true;
@@ -752,20 +745,14 @@ bool Board::is_black_king_checked() const {
     return false;
 }
 
-void Board::en_passant(Move &move) {
-    if (white_turn) {
-        set_square(move.getDest() - 10, empty);
-    } else {
-        set_square(move.getDest() + 10, empty);
-    }
-}
-
+/*Since only king moved ny a played explicitly and Rook's reaction has to be programmed,
+ * Doing it in separate method*/
 void Board::do_castling(Move &move) {
     switch (get_square(move.getSource()).getOwner().getName()) {
 
         case WK : {
-            if (move.isRightCastlig()) {
-                Piece r(WR);
+            if (move.isRightCastlig()) {        //Depends on directions of castling, setting a squares to hold
+                Piece r(WR);                    //desiered pieces
                 set_square(F1, r);
                 set_square(H1, empty);
                 Piece wk(WK);
@@ -808,36 +795,49 @@ void Board::do_castling(Move &move) {
             }
             break;
         default:
-            cerr << "in function do_castling passed piece is not a king" << endl;
+            cerr << "in function do_castling passed piece is not a king" << __FILE__<< endl; //for debugging
             return;
     }
 }
 
+
+/*Detects a mate situation.
+ * For loop:
+ *  Each iteration, a copy of current board is created.
+ *  A copied board invokes peek_move() for each pseudo-legal move is <Color>Moves list.
+ *  After peek_move(), update a moves list according to a new state of game.
+ *  If king is in not in check we count peek'd move, because it gets a player's king
+ *  out of check situation.
+ * If the number of counted moves is 0, king is no where to go from check.
+ * If this situation happens when king is currently checked - it's mate.
+ * If king's not checked - draw is detected.*/
 bool Board::mat_check() {
-    Move m(-1, -1);
-    find_legal_moves();
+
+    //Methodicly implementing mentioned algo. for both colors, depending on turn.
     int w_counter = 0;
     int b_counter = 0;
     if (white_turn) {
-        find_legal_moves();
-        for (int i = 0; i < WhiteMoves.get_size(); i++) {
+        for (int i = 0; i < WhiteMoves.get_size(); i++)
+        {
             Board b = Board(*this);
-
-            if (!WhiteMoves[i].isRightCastlig() && !WhiteMoves[i].isLeftCastlig()) {
-                if (b.peek_move(b.WhiteMoves[i])) {
+            if (!WhiteMoves[i].isRightCastlig() && !WhiteMoves[i].isLeftCastlig())
+            {
+                if (b.peek_move(b.WhiteMoves[i]))
+                {
                     b.find_legal_moves();
-                    if (!b.is_white_king_checked()) {
+                    if (!b.is_white_king_checked())
+                    {
                         w_counter += 1;
                     }
                 }
             }
         }
+        /*Indication of game-over situation is through global flags to a caller --
+         * a function of Game class
+         */
         if (w_counter == 0 && is_white_king_checked()) mate_to_white = true;
-        if (w_counter == 0 && is_white_king_checked()) stalemate = true;
-
+        if (w_counter == 0 && !is_white_king_checked()) stalemate = true;
     } else {
-        Move m(-1, -1);
-        find_legal_moves();
         for (int i = 0; i < BlackMoves.get_size(); i++) {
             Board b = Board(*this);
             if (b.peek_move(BlackMoves[i])) {
@@ -852,16 +852,23 @@ bool Board::mat_check() {
     return false;
 }
 
+
+/*A sequence of checks to find whether castling is legal:
+    *King's currently is not in check
+    * Non of squares passed by king towards castling destination isn't checked
+    * Castling is first move of both King and Rook
+* Left and right sided castlings checked separately for each color*/
+
 bool Board::canCastle(Move &m) {
     int name = get_square(m.getSource()).getOwner().getName();
-    if (get_square(m.getSource()).getOwner().get_counter() != 0) return false;
+    if (get_square(m.getSource()).getOwner().get_counter() != 0) return false;  //King's first move
     if (white_turn) {
         if (name == WK) {
-            if (get_square(E1).getOwner().get_counter() != 0) return false;
+            if (get_square(E1).getOwner().get_counter() != 0) return false;     //Rook's first move
 
             if (m.isLeftCastlig()) //e1 d1 c1
             {
-                if (get_square(A1).getOwner().get_counter() != 0) return false;
+                if (get_square(A1).getOwner().get_counter() != 0) return false; //Squares are free and not checked
                 for (int i = C1; i <= E1; i++) {
                     if (is_checked(get_square(i).getId()))
                         return false;
@@ -908,6 +915,18 @@ bool Board::canCastle(Move &m) {
     return false;
 }
 
+
+/*Each turn, counting how many pieces there are of each color
+ * Using enum of pieces names, to treat them as indexes in array
+ * of counters: int WhitePieces[7], BlackPieces[7]
+ * Reminder of enum from Piece.h:
+        * enum {
+                  WK = 6, WQ = 5, WR = 4, WB = 3, WN = 2, WP = 1,
+                  BK = -6, BQ = -5, BR = -4, BB = -3, BN = -2,  BP = -1, EM = 0, IV = 7
+                }
+ * if one of counters is 0, there are no pieces of corresponding index left.*/
+
+
 void Board::ins_material_check() {
     for (int i = 0; i < 7; i++) {
         WhitePieces[i] = 0;
@@ -920,7 +939,7 @@ void Board::ins_material_check() {
             int name = get_square(j).getOwner().getName();
             if (name > 0 && name != IV) {
                 if (name == i)
-                    WhitePieces[name]++;
+                    WhitePieces[name]++; //
             }
             if (name < 0) //IV > 0
             {

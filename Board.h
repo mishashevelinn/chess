@@ -22,8 +22,8 @@ enum // Squares
 };
 
 
-enum // Directions
-{
+enum // Directions. used for easier calculations. adding each of directions to current direction
+{    //gives a destenation coordinate.
     N = 10, S = -10, E = -1, W = 1,
     NW = 11, SW = -9, NE = 9, SE = -11,
     NNW = 21, NNE = 19, NWW = 12, NEE = 8,

@@ -39,8 +39,9 @@ public:
 
     void setID(int init_id){ id = init_id ;}
 
-    /*Overloading operators for easier coding, basically rewriting setter surrounding setter  */
     bool operator==(const Square &rhs) const;
+
+    /*Overloading operators for easier coding, basically surrounding piece setter as member of Square   */
 
     Square & operator=( Piece & p) { setOwner(p); return *this;}
     Piece owner;
