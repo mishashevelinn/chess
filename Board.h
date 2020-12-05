@@ -34,16 +34,8 @@ enum // Directions
 class Board {
 public:
     Board();
+    Board(const Board & b);
 
-    Board(const Board & b):WhiteMoves(b.WhiteMoves), BlackMoves(b.BlackMoves), mate_to_white(b.mate_to_white),
-    mate_to_black(b.mate_to_black), stalemate(b.stalemate), ins_material(b.ins_material), white_turn(b.white_turn),
-    promotion(b.promotion), white_king_checked(b.white_king_checked), WhitePieces(b.WhitePieces), BlackPieces(b.BlackPieces) {
-        board = new Square[120];
-        for (int i = 0; i < 120; i++) {
-            board[i] = b.board[i];
-        }
-
-    }
 
 
 
@@ -78,7 +70,7 @@ public:
 
     friend std::ostream& operator <<(std::ostream &os, const Board &rhs);
 
-    void set_square(int position, const Piece & new_owner) ;
+    void set_square(int position, Piece & new_owner) const ;
 
                  //Flag to handle pawn's promotion
 

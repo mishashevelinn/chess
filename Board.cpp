@@ -8,23 +8,40 @@
 #include <iostream>
 
 using namespace std;
+Piece empty = Piece(EM); //an "empty" Piece. Set as owner of square to make square empty.
 
-Piece empty = Piece(EM);
+static int WhitePiecesInit[7] = {0};    //used to initalize primitive arrays of counters.
+static int BlackPiecesInit[7] = {0};    //those arrays used to keep track of number of dead and alive pieces
 
-static int WhitePiecesInit[7] = {0};
-static int BlackPiecesInit[7] = {0};
-Board::Board() : board(new Square[120]),
-                mate_to_white(false), mate_to_black(false), stalemate(false),
-                ins_material(false), white_turn(true), promotion(false), white_king_checked(false),
-                 lastMove(Move()){
+
+/*Providing default constructor
+ *Initializes boolean flags
+ * Dynamically allocates array of squares
+ * Sets last move with Move default constructor, since when board created, there is no last move
+ * Sets pieces-tracking arrays to be arrays of zeroes*/
+Board::Board() : board(new Square[120]), mate_to_white(false), mate_to_black(false),
+                 stalemate(false), ins_material(false), white_turn(true), promotion(false),
+                 white_king_checked(false), lastMove(Move())
+                 {
+
     WhitePieces = WhitePiecesInit;
     BlackPieces = BlackPiecesInit;
-    for (int i = 0; i < 7; i++) {
-        WhitePieces[i] = 0;
-        BlackPieces[i] = 0;
+}
+
+/*Copy constructor
+ *Primitive data members being initialized in constructor initializer
+ * Dynamically allocated array is deeply copied*/
+Board::Board(const Board & b):WhiteMoves(b.WhiteMoves), BlackMoves(b.BlackMoves), mate_to_white(b.mate_to_white),
+                       mate_to_black(b.mate_to_black), stalemate(b.stalemate), ins_material(b.ins_material), white_turn(b.white_turn),
+                       promotion(b.promotion), white_king_checked(b.white_king_checked), WhitePieces(b.WhitePieces), BlackPieces(b.BlackPieces) {
+
+    board = new Square[120];
+    for (int i = 0; i < 120; i++) {
+        board[i] = b.board[i];
     }
 }
 
+/*A print function as operator << */
 std::ostream &operator<<(std::ostream &os, const Board &rhs) {
     static const char pieces[] = "KQRBNP.pnbrqk";
 
@@ -34,7 +51,7 @@ std::ostream &operator<<(std::ostream &os, const Board &rhs) {
             int number = (row + 1) * 10 + col;
             int piece_name = rhs.get_square(number).getOwner().getName();   //*using advantage of enumeration
             if (piece_name != IV) {                                         //of pieces names
-                if(col != 8) os << pieces[piece_name + 6] << " ";
+                if (col != 8) os << pieces[piece_name + 6] << " ";
                 else os << pieces[piece_name + 6];
             }
         }
@@ -42,13 +59,41 @@ std::ostream &operator<<(std::ostream &os, const Board &rhs) {
     }
     os << "  A B C D E F G H" << std::endl;
 
-
-    //if black king checked
     return os;
 }
 
 
-/*Initialize a board to its beginning state*/
+/*Initialize a board to its beginning state.
+ * Board is 1D array of integers, surrounded by invalid values (represents an invalid square)
+ * It makes a range check easier while finding possible moves.
+ * Additional rows of invalid squares at top and bottom
+ * leads to friendly enumeration: neighbour rows numbers are differ by 10:
+
+
+                           BLACK
+      110     111 112 113 114 115 116 117 118     119
+      100     101 102 103 104 105 106 107 108     109
+
+              A   B   C   D   E   F   G   H
+ 8    90      A8  92  93  Q    K  96  97  H8      99
+ 7    80      81  82  83  84  85  86  87  88      89
+ 6    70      71  72  73  74  75  76  77  78      79
+ 5    60      61  62  63  64  EM  66  67  68      69
+ 4    50      51  52  53  54  55  56  57  58      59
+ 3    40      41  42  EM  44  45  46  47  48      49
+ 2    30      31  32  33  34  35  36  37  H2      39
+ 1    20      21  22  23  q    k  26  27  H1      29
+              A   B   C   D   E   F   G   H
+      10      IV  IV  13  14  15  16  17  18      19
+      0       1   2   3   4   IV   6   7   8       9
+                           WHITE
+      */
+
+
+/*This method sets a board to its initial state
+ * It passes to Piece construcor an integer, repesenteting
+ * piece's name and color and call set_square method
+ * to populate an array of empty squares*/
 void Board::init() {
     int initial[120] = {
             IV, IV, IV, IV, IV, IV, IV, IV, IV, IV,
@@ -80,13 +125,13 @@ bool Board::peek_move(Move &m) {
     find_legal_moves();
 
     if (!isValidMove(m)) {
-       // cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
+        // cerr << "ERROR: INVALID MOVE\n " << __FILE__ << " LINE: " << __LINE__ << endl;
 
         return false;
     }
     Piece moved_piece = board[m.getSource()].getOwner();
 
-/************************* En Passant ******************************/
+/************************ *En Passant* *****************************/
     if (m.en_passant) {
         if (white_turn) {
             Move template_move = Move(m.getDest() + 10, m.getDest() - 10);
@@ -98,23 +143,20 @@ bool Board::peek_move(Move &m) {
             set_square(m.getDest() + 10, empty);
         }
     }
-/***********************Castling**********************************/
+/********************** *Castling* *********************************/
     if (m.isLeftCastlig() || m.isRightCastlig()) {
-        if(!canCastle(m)) return false;
+        if (!canCastle(m)) return false;
         do_castling(m);
     }
 
 
-    //Pawn's promotion
-    if (m.promoted) {
-        //cout<< "doing promotion" << endl;
-        //cout << "Promoted piece is: " << m.getPromoted() << endl;
-        if(m.getPromoted().getName() == EM){
-          //  cout << "INVALID INPUT TO MAKE MOVE, PROMOTED PIECE IS MISSING" << endl;
-            //TODO RETURN FALSE;
-        }
+/********************** *Promotion* *********************************/
+    if (m.promoted && m.getPromoted().getName() != EM) {
         moved_piece.setName(m.getPromoted().getName());
     }
+
+
+/********************** *Do Pseudo-Legal Move **********************************/
     moved_piece.move_counter_increase();
     set_square(m.getDest(), moved_piece);
     set_square(m.getSource(), empty);
@@ -131,10 +173,15 @@ bool Board::make_move(Move &m) {
     find_legal_moves(); //TODO do i need this?
 
     /*roll back move if it leads to current player's check*/
-    if(white_turn && is_white_king_checked()) { *this = backup; return false;}
-    if(!white_turn && is_black_king_checked()) {*this = backup; return false;}
+    if (white_turn && is_white_king_checked()) {
+        *this = backup;
+        return false;
+    }
+    if (!white_turn && is_black_king_checked()) {
+        *this = backup;
+        return false;
+    }
 
-    //moved_piece.move_counter_increase();
 
     white_turn = !white_turn;
     mat_check();
@@ -151,8 +198,8 @@ bool Board::make_move(Move &m) {
 
 bool Board::isValidMove(Move &m) const {
     if (get_square(m.getSource()) == EM) return false;
-    if (get_square(m.getSource()).getOwner().getName() < 0 && white_turn) return false;
-    if (get_square(m.getSource()).getOwner().getName() > 0 && !white_turn) return false;
+    if (get_square(m.getSource()).getOwner() < 0 && white_turn) return false;
+    if (get_square(m.getSource()).getOwner() > 0 && !white_turn) return false;
     if (white_turn && WhiteMoves.in(m)) {
         return true;
     }
@@ -162,7 +209,7 @@ bool Board::isValidMove(Move &m) const {
     return false;
 }
 
-void Board::set_square(int position, const Piece &new_owner) {
+void Board::set_square(int position, Piece &new_owner) const {
     board[position].owner = new_owner;
     board[position].setID(position);
 }
@@ -188,7 +235,8 @@ void Board::find_legal_moves() {
                         if (i > 80) //check for promotion
                         {
                             {
-                                Move move(i, j, piece, true,WQ); //move object is aware of a piece which has done the move
+                                Move move(i, j, piece, true,
+                                          WQ); //move object is aware of a piece which has done the move
                                 WhiteMoves.add(move);
 
                                 Move move2(i, j, piece, true, WN);
@@ -388,7 +436,7 @@ void Board::find_legal_moves() {
                         WhiteMoves.add(move);
                     }
                     if (i == E1 &&
-                    get_square(i - 1).getOwner().getName() == EM  //left side
+                        get_square(i - 1).getOwner().getName() == EM  //left side
                         && get_square(i - 2).getOwner().getName() == EM &&
                         get_square(A1).getOwner().getName() == WR) {
                         Move move(i, i - 2, piece, false, Piece());
@@ -471,13 +519,13 @@ void Board::find_legal_moves() {
                             BlackMoves.add(move);
                         }
                     }
-                    if (i >=A4 && i <= H4)    //En Passant
+                    if (i >= A4 && i <= H4)    //En Passant
                     {
                         if (get_square(i + 1).isOccupied() &&
                             get_square(i + 1).getOwner().getName() == WP &&
                             get_square(i + 1).getOwner().get_counter() == 1) {
                             Move move(i, j, piece, false, Piece(), true);
-                          //  cout << move << endl;
+                            //  cout << move << endl;
                             BlackMoves.add(move);
                         }
                     }
@@ -512,7 +560,7 @@ void Board::find_legal_moves() {
                             get_square(i - 1).getOwner().get_counter() == 1) {
                             Move move(i, j, piece, false, Piece(), true);
                             BlackMoves.add(move);
-                          //  cout << move << endl;
+                            //  cout << move << endl;
                         }
                     }
                     break;
@@ -779,13 +827,13 @@ bool Board::mat_check() {
                 if (b.peek_move(b.WhiteMoves[i])) {
                     b.find_legal_moves();
                     if (!b.is_white_king_checked()) {
-                        w_counter+=1;
-                                            }
+                        w_counter += 1;
+                    }
                 }
             }
         }
         if (w_counter == 0 && is_white_king_checked()) mate_to_white = true;
-        if(w_counter == 0 &&  is_white_king_checked()) stalemate = true;
+        if (w_counter == 0 && is_white_king_checked()) stalemate = true;
 
     } else {
         Move m(-1, -1);
@@ -794,23 +842,22 @@ bool Board::mat_check() {
             Board b = Board(*this);
             if (b.peek_move(BlackMoves[i])) {
                 b.find_legal_moves();
-                if(!b.is_black_king_checked())
+                if (!b.is_black_king_checked())
                     b_counter++;
             }
         }
         if (b_counter == 0 && is_black_king_checked()) mate_to_black = true;
-        if(b_counter == 0 && !is_black_king_checked()) stalemate = true;
+        if (b_counter == 0 && !is_black_king_checked()) stalemate = true;
     }
     return false;
 }
 
-bool Board::canCastle(Move &m)
-{
+bool Board::canCastle(Move &m) {
     int name = get_square(m.getSource()).getOwner().getName();
     if (get_square(m.getSource()).getOwner().get_counter() != 0) return false;
     if (white_turn) {
         if (name == WK) {
-            if(get_square(E1).getOwner().get_counter() != 0) return false;
+            if (get_square(E1).getOwner().get_counter() != 0) return false;
 
             if (m.isLeftCastlig()) //e1 d1 c1
             {
@@ -833,10 +880,9 @@ bool Board::canCastle(Move &m)
             }
         }
 
-    }
-    else {
+    } else {
         if (name == BK) {
-            if(get_square(E8).getOwner().get_counter() != 0) return false;
+            if (get_square(E8).getOwner().get_counter() != 0) return false;
             if (m.isLeftCastlig()) //e1 d1 c1
             {
                 if (get_square(A8).getOwner().get_counter() != 0) return false;
@@ -861,7 +907,8 @@ bool Board::canCastle(Move &m)
     }
     return false;
 }
-void Board::ins_material_check(){
+
+void Board::ins_material_check() {
     for (int i = 0; i < 7; i++) {
         WhitePieces[i] = 0;
         BlackPieces[i] = 0;
@@ -869,17 +916,16 @@ void Board::ins_material_check(){
     int whitePiecesDead = 0;
     int blackPiecesDead = 0;
     for (int i = 1; i <= 7; i++) {
-        for (int j = A1; j <=H8 ; j++) {
+        for (int j = A1; j <= H8; j++) {
             int name = get_square(j).getOwner().getName();
-            if(name > 0 && name != IV)
-            {
-                if(name == i)
-                WhitePieces[name]++;
+            if (name > 0 && name != IV) {
+                if (name == i)
+                    WhitePieces[name]++;
             }
-            if( name < 0 ) //IV > 0
+            if (name < 0) //IV > 0
             {
-                if(name*(-1) == i)
-                BlackPieces[name*(-1)]++;
+                if (name * (-1) == i)
+                    BlackPieces[name * (-1)]++;
 
             }
         }
@@ -889,22 +935,18 @@ void Board::ins_material_check(){
         if (WhitePieces[i] == 0) {
             whitePiecesDead++;
         }
-        if(BlackPieces[i] == 0)
-        {
+        if (BlackPieces[i] == 0) {
             blackPiecesDead++;
         }
     }
-        if(whitePiecesDead == 5 && blackPiecesDead == 5)
-        {
-            ins_material = true;
-        }
-        if(whitePiecesDead == 4 && blackPiecesDead == 4 && WhitePieces[WB] == 1 && BlackPieces[WB] == 1)
-        {
-            ins_material = true;
-        }
-        if(whitePiecesDead == 4 && blackPiecesDead == 4 && WhitePieces[WN] == 1 && BlackPieces[WN] == 1)
-        {
-            ins_material = true;
-        }
+    if (whitePiecesDead == 5 && blackPiecesDead == 5) {
+        ins_material = true;
+    }
+    if (whitePiecesDead == 4 && blackPiecesDead == 4 && WhitePieces[WB] == 1 && BlackPieces[WB] == 1) {
+        ins_material = true;
+    }
+    if (whitePiecesDead == 4 && blackPiecesDead == 4 && WhitePieces[WN] == 1 && BlackPieces[WN] == 1) {
+        ins_material = true;
+    }
 
 }

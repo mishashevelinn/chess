@@ -33,17 +33,10 @@ public:
 
     int getName() const { return name; }
 
-    bool setPosition(const int &pos);
-
-    int getPosition();
 
     void setName(int new_name);
 
     bool operator==(int) const;
-
-    void set_first_move() { first_move = true; }
-
-    bool get_first_move() const { return first_move; }
 
     void move_counter_increase() { move_counter++;}
 
@@ -112,12 +105,10 @@ private:
     int move_counter;
 public:
     bool operator==(const Piece &rhs) const;
-
     bool operator!=(const Piece &rhs) const;
-
-    void operator=(const Piece & rhs);
-
-
+    Piece & operator=(const Piece & rhs);
+    bool operator<(int) const;
+    bool operator>(int) const;
 };
 
 

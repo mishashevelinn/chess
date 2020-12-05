@@ -8,9 +8,6 @@
 
 
 
-Square::Square(const Piece &owner, int id) : owner(owner), id(id) {
-}
-
 /* default constructor provides an empty square, represented by
  * an empty piece - EMP and illegal color 2. "transparent piece"
 */
@@ -31,14 +28,6 @@ void Square::setOwner(Piece &new_owner) {
     this->owner.set_counter(new_owner.get_counter());
 }
 
-
-/*For debugging*/
-void Square::get_info() const {
-    cout << "name: " << owner;
-    cout << "position: " << *this << endl;
-
-}
-
 bool Square::isOccupied() const {
     if (owner.getName() == EM || owner.getName() == IV)
         return false;
@@ -46,7 +35,7 @@ bool Square::isOccupied() const {
 }
 
 bool Square::operator==(const Square &rhs) const {
-    return id == rhs.id;
+    return getOwner() == rhs.getOwner();
 }
 
 
