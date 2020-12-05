@@ -1,24 +1,25 @@
-//
-// Created by misha on 29/11/2020.
-//
 #include <sstream>
 #include "Game.h"
-#include <string.h>
 
+/*This class is responsible for gameplay loop and console interaction.
+ * Invokes corresponding methods of Board and uses its own methods
+ * checks input
+ * parsing of string to move, if legal
+ * */
 using namespace std;
 
 void Game::game_loop() {
 
-    board->init();
+    board->init();  //initializing a board
     cout << *board;
-
+    //If one of following situations occurs, the program ends.
     string str_move;
     while (true) {
         if (board->ins_material || board->mate_to_black || board->mate_to_white || board->stalemate) {
             if (board->mate_to_black) cout << "White wins with checkmate!" << endl;
             if (board->mate_to_white) cout << "Black wins with checkmate!" << endl;
-            if(board->stalemate) cout << "The game is drawn due to stalemate!" << endl;
-            if(board->ins_material) cout << "The game is drawn due to insufficient material!" << endl;
+            if (board->stalemate) cout << "The game is drawn due to stalemate!" << endl;
+            if (board->ins_material) cout << "The game is drawn due to insufficient material!" << endl;
             return;
         }
 
@@ -26,18 +27,18 @@ void Game::game_loop() {
         board->white_turn ? cout << "White's turn, please enter a move:" : cout
                 << "Black's turn, please enter a move:";
         cout << endl;
-        err: getline(cin, str_move);
-        if (!cin) { return; }
+        err:
+        getline(cin, str_move); //getting a string each time
+        if (!cin) { return; }               //python tests adaptation
         if (valid_option(str_move)) {
-            Move move;
+            Move move;                      //temperary move is updated by str_to_move, if spelling is ok
             str_to_move(str_move, move);
-            if (!board->make_move(move))
+            if (!board->make_move(move))    //if move is illegal, print an error message and loop over
             {
                 cerr << num_turn << ") " << "Illegal move; please enter a move:" << endl;
                 goto err;
-            }
-            else {
-                num_turn++;
+            } else {
+                num_turn++; //keeping track of number of turns
                 cout << *board;
                 continue;
             }
@@ -49,12 +50,15 @@ void Game::game_loop() {
 
 }
 
+/*Checks spelling and if passed a check, converst the string to move
+ * for passing it to board by caller*/
 bool Game::valid_option(string str) {
     int word_counter = 0;
     string temp;
     stringstream s(str);
-    while (s >> temp) { word_counter++; }
-    if (word_counter < 2 || word_counter > 3 || (board->promotion && word_counter != 3))
+    while (s >> temp) { word_counter++; }   //Counting words
+    if (word_counter < 2 || word_counter > 3 ||
+        (board->promotion && word_counter != 3)) //shouldn't be longer than 2 or 3 if promotion
         return false;
 
     word_counter = 0;
@@ -62,7 +66,7 @@ bool Game::valid_option(string str) {
 
     while (ss >> temp) {
         word_counter++;
-        if (word_counter == 3) { //promotion
+        if (word_counter == 3) { //promotion third word check
             cout << temp.length();
             if (temp.length() != 1) { return false; }
             char c = temp[0];
@@ -82,18 +86,21 @@ bool Game::valid_option(string str) {
             }
             return true;
         }
-
+        //Case of two words. Checks each by special function for squares
         if (!str_square_check(temp)) { return false; }
     }
 
     return true;
 }
 
+
+/*Translating ASCII to row and column number.
+ * In this program since we use 1D array the result is a sum of both ideces*/
 int Game::str_to_move(const string &str, Move &move) const {
     switch (str.length()) {
         case 5: {
             int column_number_origin = (((int) str[0] - 56) % 9) + 1;
-            int row_number_origin = (((int) str[1] - 28) % 10 + 1) * 10; //TODO Find a better formula XD
+            int row_number_origin = (((int) str[1] - 28) % 10 + 1) * 10;
             move.setSource(row_number_origin + column_number_origin);
 
             int column_number_target = (((int) str[3] - 56) % 9) + 1;
@@ -103,7 +110,7 @@ int Game::str_to_move(const string &str, Move &move) const {
             break;
         case 7: {
             int column_number_origin = (((int) str[0] - 56) % 9) + 1;
-            int row_number_origin = (((int) str[1] - 28) % 10 + 1) * 10; //TODO Find a better formula XD
+            int row_number_origin = (((int) str[1] - 28) % 10 + 1) * 10;
             move.setSource(row_number_origin + column_number_origin);
 
             int column_number_target = (((int) str[3] - 56) % 9) + 1;
@@ -118,20 +125,23 @@ int Game::str_to_move(const string &str, Move &move) const {
         default:
             return -99;
     }
-    return -99;
+    return -99; //fail of the program indication
 }
 
+
+//Spelling check - only capital letters and 1-8 number are allowed
 bool Game::str_square_check(const string &str_square) const {
     if (str_square.length() != 2) { return false; }
-    if ((int)str_square[0] < 65 ||   //Capital letters A - H
-        (int)str_square[0] > 72 ||
-        (int)str_square[1] < 49 ||  //Numbers 1 - 8
-        (int)str_square[1] > 56)
+    if ((int) str_square[0] < 65 ||   //Capital letters A - H
+        (int) str_square[0] > 72 ||
+        (int) str_square[1] < 49 ||  //Numbers 1 - 8
+        (int) str_square[1] > 56)
         return false;
     return true;
 
 }
 
+/*Dictionary, using enum*/
 int Game::str_to_name(const char &str_name) const{
     char c = str_name;
     switch (c) {
@@ -152,7 +162,7 @@ int Game::str_to_name(const char &str_name) const{
         case 'N' :
             return BN;
         default:
-            //cerr<<"ERROR WHILE ANALYZING PROMOTION CANDIDATE"<< __FILE__<<__LINE__<<endl; //TODO erase whenever after
+            cerr << "ERROR WHILE ANALYZING PROMOTION CANDIDATE" << __FILE__ << __LINE__ << endl; //this is for debugging
             return 0;
     }
 

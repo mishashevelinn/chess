@@ -1,8 +1,3 @@
-//
-// Created by misha on 24/11/2020.
-//
-
-#include <iostream>
 #include "Square.h"
 
 
@@ -14,14 +9,16 @@
 Square::Square() : owner(EM), id(-1) {
 
 }
-
+// Index of square
 int const &Square::getId() const {
     return id;
 }
 
+//Piece, placed on square
 Piece const &Square::getOwner() const {
     return owner;
 }
+
 
 void Square::setOwner(Piece &new_owner) {
     this->owner.setName(new_owner.getName());

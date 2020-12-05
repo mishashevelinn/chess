@@ -1,6 +1,3 @@
-//
-// Created by misha on 24/11/2020.
-//
 
 #ifndef CHESS_SQUARE_H
 #define CHESS_SQUARE_H

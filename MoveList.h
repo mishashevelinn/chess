@@ -1,7 +1,3 @@
-//
-// Created by misha on 27/11/2020.
-//
-
 #include "Move.h"
 #include <iostream>
 #ifndef CHESS_MOVELIST_H
@@ -9,10 +5,14 @@
 
 
 class MoveList {
+private:
+    Move *moves;
+    int size;
+
 public:
     MoveList();
 
-    MoveList(const MoveList & ml) :size(ml.size) {
+    MoveList(const MoveList &ml) : size(ml.size) {
         moves = new Move[128];
         for (int i = 0; i < 128; i++) {
             moves[i] = ml.moves[i];
@@ -38,15 +38,9 @@ public:
         return moves[index];
     }
 
-    Move *moves;
-    int size;
 
 
 
-
-
-
-private:
 
 };
 

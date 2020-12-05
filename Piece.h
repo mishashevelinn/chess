@@ -26,24 +26,33 @@ using namespace std;
 
 class Piece {
 public:
+
     Piece(): name(EM), position(-1), first_move(true), move_counter(0) {};
 
     Piece(int name) : name(name), position(-1), first_move(true), move_counter(0) {}
 
-
     int getName() const { return name; }
-
 
     void setName(int new_name);
 
+
+    void move_counter_increase() { move_counter++; }
+
+    int get_counter() const { return move_counter; }
+
+    void set_counter(int i) { move_counter = i; }
+
     bool operator==(int) const;
 
-    void move_counter_increase() { move_counter++;}
+    bool operator==(const Piece &rhs) const;
 
-    int get_counter() const  { return  move_counter; }
+    bool operator!=(const Piece &rhs) const;
 
-    void set_counter(int i) { move_counter = i;}
+    Piece &operator=(const Piece &rhs);
 
+    bool operator<(int) const;
+
+    bool operator>(int) const;
 
 /*Operator is not necessary for the assignment and was written for
  * practicing operator overloading and widely used in debugging.
@@ -103,12 +112,7 @@ private:
     int position;
     bool first_move; //used to handle king's pawns and rook's stuff
     int move_counter;
-public:
-    bool operator==(const Piece &rhs) const;
-    bool operator!=(const Piece &rhs) const;
-    Piece & operator=(const Piece & rhs);
-    bool operator<(int) const;
-    bool operator>(int) const;
+
 };
 
 

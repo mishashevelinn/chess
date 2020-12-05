@@ -40,9 +40,7 @@ public:
 
     void init();
 
-    Square *board;
-    MoveList WhiteMoves;
-    MoveList BlackMoves;
+
     bool mate_to_white;
     bool mate_to_black;
     bool stalemate;
@@ -50,11 +48,6 @@ public:
     bool white_turn;
     bool promotion;
     bool white_king_checked;
-    Move lastMove;
-    int *WhitePieces;
-    int *BlackPieces;
-
-
 
 
     bool make_move(Move &m);
@@ -69,31 +62,32 @@ public:
 
     friend std::ostream& operator <<(std::ostream &os, const Board &rhs);
 
-    void set_square(int position, Piece & new_owner) const ;
+    void set_square(int position, Piece &new_owner) const;
 
-                 //Flag to handle pawn's promotion
+    //Flag to handle pawn's promotion
 
     bool is_checked(int i) const;
 
-    bool mat_check() ;
-
+    bool mat_check();
 
 
 private:
-
-
+    Square *board;
+    MoveList WhiteMoves;
+    MoveList BlackMoves;
+    Move lastMove;
+    int *WhitePieces;
+    int *BlackPieces;
 
 
     bool isValidMove(Move &m) const;
 
 
-
-
     bool peek_move(Move &m);
 
-    bool is_white_king_checked() const ;
+    bool is_white_king_checked() const;
 
-    bool is_black_king_checked() const ;
+    bool is_black_king_checked() const;
 
     void en_passant(Move &move);
 

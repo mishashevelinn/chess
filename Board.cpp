@@ -19,9 +19,9 @@ static int BlackPiecesInit[7] = {0};    //those arrays used to keep track of num
  * Dynamically allocates array of squares
  * Sets last move with Move default constructor, since when board created, there is no last move
  * Sets pieces-tracking arrays to be arrays of zeroes*/
-Board::Board() : board(new Square[120]), mate_to_white(false), mate_to_black(false),
+Board::Board() : mate_to_white(false), mate_to_black(false),
                  stalemate(false), ins_material(false), white_turn(true), promotion(false),
-                 white_king_checked(false), lastMove(Move())
+                 white_king_checked(false), board(new Square[120]), lastMove(Move())
                  {
 
     WhitePieces = WhitePiecesInit;
@@ -31,9 +31,12 @@ Board::Board() : board(new Square[120]), mate_to_white(false), mate_to_black(fal
 /*Copy constructor
  *Primitive data members being initialized in constructor initializer
  * Dynamically allocated array is deeply copied*/
-Board::Board(const Board & b):WhiteMoves(b.WhiteMoves), BlackMoves(b.BlackMoves), mate_to_white(b.mate_to_white),
-                       mate_to_black(b.mate_to_black), stalemate(b.stalemate), ins_material(b.ins_material), white_turn(b.white_turn),
-                       promotion(b.promotion), white_king_checked(b.white_king_checked), WhitePieces(b.WhitePieces), BlackPieces(b.BlackPieces) {
+Board::Board(const Board &b) : mate_to_white(b.mate_to_white),
+                               mate_to_black(b.mate_to_black), stalemate(b.stalemate), ins_material(b.ins_material),
+                               white_turn(b.white_turn),
+                               promotion(b.promotion), white_king_checked(b.white_king_checked),
+                               WhiteMoves(b.WhiteMoves), BlackMoves(b.BlackMoves), WhitePieces(b.WhitePieces),
+                               BlackPieces(b.BlackPieces) {
 
     board = new Square[120];
     for (int i = 0; i < 120; i++) {
@@ -187,7 +190,7 @@ bool Board::make_move(Move &m) {
         return false;
     }
 
-
+    //after a turn passing to other side, end-game cases are checked
     white_turn = !white_turn;
     mat_check();
     ins_material_check();
@@ -713,14 +716,14 @@ void Board::find_legal_moves() {
 bool Board::is_checked(int k) const {
     if (get_square(k).getOwner().getName() < 0 && get_square(k).getOwner().getName() != IV) //black piece is inspected
     {
-        for (int i = 0; i < WhiteMoves.size; i++) {
+        for (int i = 0; i < WhiteMoves.get_size(); i++) {
             if (get_square(k).getId() == WhiteMoves[i].getDest()) //can white move get to black king?
                 return true;                                        // [ ] operator is overloaded
         }
     }
     if (get_square(k).getOwner().getName() > 0 && get_square(k).getOwner().getName() != IV) //white piece is inspected
     {
-        for (int i = 0; i < BlackMoves.size; i++) {
+        for (int i = 0; i < BlackMoves.get_size(); i++) {
             if (get_square(k).getId() == BlackMoves[i].getDest())
                 return true;
         }
