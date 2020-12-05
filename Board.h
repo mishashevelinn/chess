@@ -8,7 +8,9 @@
 
 #include "MoveList.h"
 
-
+/*Enum provides convenient way for indexing squares
+  And makes loops and range definitions clearer
+ */
 enum // Squares
 {
     A8 = 91, B8, C8, D8, E8, F8, G8, H8,
@@ -23,7 +25,7 @@ enum // Squares
 
 
 enum // Directions. used for easier calculations. adding each of directions to current direction
-{    //gives a destenation coordinate.
+{    //gives a destination coordinate.
     N = 10, S = -10, E = -1, W = 1,
     NW = 11, SW = -9, NE = 9, SE = -11,
     NNW = 21, NNE = 19, NWW = 12, NEE = 8,
@@ -35,9 +37,6 @@ class Board {
 public:
     Board();
     Board(const Board & b);
-
-
-
 
     void init();
 

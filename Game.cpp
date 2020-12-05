@@ -73,7 +73,6 @@ bool Game::valid_option(string str) {
                     c != 'r' &&
                     c != 'n') { return false; }
             }
-
             if (!board->white_turn) {
 
                 if (c != 'Q' &&
@@ -86,7 +85,6 @@ bool Game::valid_option(string str) {
 
         if (!str_square_check(temp)) { return false; }
     }
-
 
     return true;
 }

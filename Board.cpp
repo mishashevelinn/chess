@@ -916,16 +916,18 @@ bool Board::canCastle(Move &m) {
 }
 
 
-/*Each turn, counting how many pieces there are of each color
+/**Each turn, counting how many pieces there are of each color.
  * Using enum of pieces names, to treat them as indexes in array
  * of counters: int WhitePieces[7], BlackPieces[7]
  * Reminder of enum from Piece.h:
-        * enum {
+          enum {
                   WK = 6, WQ = 5, WR = 4, WB = 3, WN = 2, WP = 1,
                   BK = -6, BQ = -5, BR = -4, BB = -3, BN = -2,  BP = -1, EM = 0, IV = 7
                 }
- * if one of counters is 0, there are no pieces of corresponding index left.*/
-
+ * if one of counters is 0, there are no pieces of corresponding
+ * index left.
+ * Interaction with caller via flag data member
+ * */
 
 void Board::ins_material_check() {
     for (int i = 0; i < 7; i++) {
@@ -934,7 +936,7 @@ void Board::ins_material_check() {
     }
     int whitePiecesDead = 0;
     int blackPiecesDead = 0;
-    for (int i = 1; i <= 7; i++) {
+    for (int i = 1; i <= 7; i++) {  //counting how many pieces left on board
         for (int j = A1; j <= H8; j++) {
             int name = get_square(j).getOwner().getName();
             if (name > 0 && name != IV) {
@@ -958,7 +960,7 @@ void Board::ins_material_check() {
             blackPiecesDead++;
         }
     }
-    if (whitePiecesDead == 5 && blackPiecesDead == 5) {
+    if (whitePiecesDead == 5 && blackPiecesDead == 5) { //required combinations of pieces of both players
         ins_material = true;
     }
     if (whitePiecesDead == 4 && blackPiecesDead == 4 && WhitePieces[WB] == 1 && BlackPieces[WB] == 1) {
