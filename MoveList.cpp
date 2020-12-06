@@ -18,13 +18,17 @@ bool MoveList::add(const Move &move) {
     return true;
 }
 
+MoveList::~MoveList() {
+    delete[] moves;
+
+}
+
 bool MoveList::clear() {
-    for (int i = 0; i < size; i++)
-    {
+    for (int i = 0; i < size; i++) {
         moves[i] = Move();//this is for inner order, avoiding storing garbage and easier debugging
     }
     size = 0;   //limiting traversal ability;
-return true;
+    return true;
 }
 
 //inner search

@@ -5,6 +5,8 @@
  * Invokes corresponding methods of Board and uses its own methods
  * checks input
  * parsing of string to move, if legal
+ * No copy c'tor or operator= because only one played at a time.
+ * Destructor to delete a dynamically allocated pointer board.
  * */
 using namespace std;
 
@@ -31,7 +33,7 @@ void Game::game_loop() {
         getline(cin, str_move); //getting a string each time
         if (!cin) { return; }               //python tests adaptation
         if (valid_option(str_move)) {
-            Move move;                      //temperary move is updated by str_to_move, if spelling is ok
+            Move move;                      //temporary move is updated by str_to_move, if spelling is ok
             str_to_move(str_move, move);
             if (!board->make_move(move))    //if move is illegal, print an error message and loop over
             {
@@ -50,9 +52,13 @@ void Game::game_loop() {
 
 }
 
+Game::~Game() {
+    delete board;
+}
+
 /*Checks spelling and if passed a check, converst the string to move
  * for passing it to board by caller*/
-bool Game::valid_option(string str) {
+bool Game::valid_option(const string &str) {
     int word_counter = 0;
     string temp;
     stringstream s(str);
@@ -95,7 +101,7 @@ bool Game::valid_option(string str) {
 
 
 /*Translating ASCII to row and column number.
- * In this program since we use 1D array the result is a sum of both ideces*/
+ * In this program since we use 1D array the result is a sum of both indexes*/
 int Game::str_to_move(const string &str, Move &move) const {
     switch (str.length()) {
         case 5: {

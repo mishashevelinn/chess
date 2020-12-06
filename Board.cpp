@@ -1,13 +1,7 @@
-//
-// Created by misha on 24/11/2020.
-//
-
-
-
 #include "Board.h"
 #include <iostream>
 
-using namespace std;
+
 Piece empty = Piece(EM); //an "empty" Piece. Set as owner of square to make square empty.
 
 static int WhitePiecesInit[7] = {0};    //used to initalize primitive arrays of counters.
@@ -18,7 +12,14 @@ static int BlackPiecesInit[7] = {0};    //those arrays used to keep track of num
  *Initializes boolean flags
  * Dynamically allocates array of squares
  * Sets last move with Move default constructor, since when board created, there is no last move
- * Sets pieces-tracking arrays to be arrays of zeroes*/
+ * Sets pieces-tracking arrays to be arrays of zeroes
+ * In mat_check() function copy of board is created and chages are made - peek_move() call.
+ * If so, copy constructor must be provided.
+ * In make_move, when check situation is checked, temporary variable backup is created.
+ * We don't want the changes are made to backup affect current object, so there is a need in deep copy,
+ * since dynamically allocated array is one of data members.
+ * provided user-defined copy assignment operator.
+ * Destructor is provided to free mentioned pointer.*/
 Board::Board() : mate_to_white(false), mate_to_black(false),
                  stalemate(false), ins_material(false), white_turn(true), promotion(false),
                  white_king_checked(false), board(new Square[120]), lastMove(Move())
@@ -97,7 +98,7 @@ std::ostream &operator<<(std::ostream &os, const Board &rhs) {
  * It passes to Piece construcor an integer, repesenteting
  * piece's name and color and call set_square method
  * to populate an array of empty squares*/
-void Board::init() {
+void Board::init() const {
     int initial[120] = {
             IV, IV, IV, IV, IV, IV, IV, IV, IV, IV,
             IV, IV, IV, IV, IV, IV, IV, IV, IV, IV,
@@ -711,6 +712,10 @@ void Board::find_legal_moves() {
 
 }
 
+Board::~Board() {
+    delete[] board;
+}
+
 
 /*Finds king, checks if its square is reachable by opponent's piece*/
 bool Board::is_checked(int k) const {
@@ -750,7 +755,7 @@ bool Board::is_black_king_checked() const { //Same as white king.
 
 /*Since only king moved ny a played explicitly and Rook's reaction has to be programmed,
  * Doing it in separate method*/
-void Board::do_castling(Move &move) {
+void Board::do_castling(Move &move) const {
     switch (get_square(move.getSource()).getOwner().getName()) {
 
         case WK : {
@@ -816,7 +821,7 @@ void Board::do_castling(Move &move) {
  * If king's not checked - draw is detected.*/
 bool Board::mat_check() {
 
-    //Methodicly implementing mentioned algo. for both colors, depending on turn.
+    //Methodically implementing mentioned algo. for both colors, depending on turn.
     int w_counter = 0;
     int b_counter = 0;
     if (white_turn) {
@@ -860,9 +865,9 @@ bool Board::mat_check() {
     *King's currently is not in check
     * Non of squares passed by king towards castling destination isn't checked
     * Castling is first move of both King and Rook
-* Left and right sided castlings checked separately for each color*/
+* Left and right sided castling checked separately for each color*/
 
-bool Board::canCastle(Move &m) {
+bool Board::canCastle(Move &m) const {
     int name = get_square(m.getSource()).getOwner().getName();
     if (get_square(m.getSource()).getOwner().get_counter() != 0) return false;  //King's first move
     if (white_turn) {
@@ -919,18 +924,18 @@ bool Board::canCastle(Move &m) {
 }
 
 
-/**Each turn, counting how many pieces there are of each color.
- * Using enum of pieces names, to treat them as indexes in array
- * of counters: int WhitePieces[7], BlackPieces[7]
- * Reminder of enum from Piece.h:
-          enum {
-                  WK = 6, WQ = 5, WR = 4, WB = 3, WN = 2, WP = 1,
-                  BK = -6, BQ = -5, BR = -4, BB = -3, BN = -2,  BP = -1, EM = 0, IV = 7
-                }
- * if one of counters is 0, there are no pieces of corresponding
- * index left.
- * Interaction with caller via flag data member
- * */
+//*Each turn, counting how many pieces there are of each color.
+// * Using enum of pieces names, to treat them as indexes in array
+// * of counters: int WhitePieces[7], BlackPieces[7]
+// * Reminder of enum from Piece.h:
+//          enum {
+//                  WK = 6, WQ = 5, WR = 4, WB = 3, WN = 2, WP = 1,
+//                  BK = -6, BQ = -5, BR = -4, BB = -3, BN = -2,  BP = -1, EM = 0, IV = 7
+//                }
+// * if one of counters is 0, there are no pieces of corresponding
+// * index left.
+// * Interaction with caller via flag data member
+// * */
 
 void Board::ins_material_check() {
     for (int i = 0; i < 7; i++) {

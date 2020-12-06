@@ -27,19 +27,27 @@ public:
 
     bool in(Move & move) const;
 
-     Move &operator[]( int index) const
-    {
-        if(index > size + 1)
-        {
-            cerr << "RANGE ERROR";
-            throw exception();
-        }
+     Move &operator[]( int index) const {
+         if (index > size + 1) {
+             cerr << "RANGE ERROR";
+             throw exception();
+         }
 
-        return moves[index];
+         return moves[index];
+     }
+
+    MoveList &operator=(const MoveList &rhs) {
+        if (this == &rhs)
+            return *this;
+
+        this->moves = new Move[128];
+        for (int i = 0; i < 128; i++) {
+            this->moves[i] = rhs.moves[i];
+        }
+        return *this;
     }
 
-
-
+    virtual ~MoveList();
 
 
 };

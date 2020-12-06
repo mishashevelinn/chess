@@ -9,13 +9,15 @@ public:
 
     Game() : board(new Board()) { num_turn = 1; }
 
+    virtual ~Game();
+
 private:
     Board *board;
     int num_turn; //counting moves for display 1) , 2) ...
 
     void display_board() const { cout << board; }
 
-    bool valid_option(string str);
+    bool valid_option(const string &str);
 
     int str_to_move(const string &str, Move &move) const;
 

@@ -7,16 +7,16 @@
 
 using namespace std;
 
+
 class Square {
 public:
     Square();
 
 
-    friend std::ostream& operator <<(std::ostream &os, const Square &rhs)
-    {
+    friend std::ostream& operator <<(std::ostream &os, const Square &rhs) {
 
-        char c = (rhs.id%10) + 'a' - 1;
-        char r = (rhs.id/10) + '1' - 2;
+        char c = (rhs.id % 10) + 'a' - 1; //used for debugging
+        char r = (rhs.id / 10) + '1' - 2;
         return os << c << r;
     }
 

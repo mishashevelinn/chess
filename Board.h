@@ -38,7 +38,7 @@ public:
     Board();
     Board(const Board & b);
 
-    void init();
+    void init() const;
 
 
     bool mate_to_white;
@@ -59,8 +59,7 @@ public:
     void find_legal_moves();
 
 
-
-    friend std::ostream& operator <<(std::ostream &os, const Board &rhs);
+    friend std::ostream &operator<<(std::ostream &os, const Board &rhs);
 
     void set_square(int position, Piece &new_owner) const;
 
@@ -69,6 +68,19 @@ public:
     bool is_checked(int i) const;
 
     bool mat_check();
+
+    Board &operator=(const Board &rhs) {
+        if (this == &rhs)
+            return *this;
+
+        this->board = new Square[128];
+        for (int i = 0; i < 128; i++) {
+            this->board[i] = rhs.board[i];
+        }
+        return *this;
+    }
+
+    virtual ~Board();
 
 
 private:
@@ -89,20 +101,11 @@ private:
 
     bool is_black_king_checked() const;
 
-    void en_passant(Move &move);
 
-    void do_castling(Move &move) ;
-
+    void do_castling(Move &move) const;
 
 
-
-
-
-
-
-
-    bool canCastle( Move &m);
-
+    bool canCastle(Move &m) const;
 
 
     void ins_material_check();

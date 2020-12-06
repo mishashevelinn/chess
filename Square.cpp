@@ -4,7 +4,9 @@
 
 
 /* default constructor provides an empty square, represented by
- * an empty piece - EMP and illegal color 2. "transparent piece"
+ * an empty piece - EMP and illegal color 2. "transparent piece"/
+ * Default c'tor is needed, because Board class has an array of squares, initialized by default constructor.
+ * No need for copy constructor or destructor, because data members are primitive values.
 */
 Square::Square() : owner(EM), id(-1) {
 
